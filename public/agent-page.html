@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AI Agent — Mobilions AI</title>
+  <title>AI Agents — Mobilions AI</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/app-styles.css" />
@@ -23,10 +23,11 @@
       <span class="app-nav-logo-text">Mobilions<span class="app-nav-logo-ai"> AI</span></span>
     </a>
     <div class="app-nav-links">
-      <a href="/dashboard" class="nav-link">Agents</a>
+      <a href="/dashboard" class="nav-link">Home</a>
+      <a href="/integrations" class="nav-link">Integrations</a>
+      <a href="/agents" class="nav-link nav-link--active">AI Agents</a>
       <a href="/power-ups" class="nav-link">Power-Ups</a>
       <a href="/brain" class="nav-link">Brain AI</a>
-      <a href="/integrations" class="nav-link">Integrations</a>
     </div>
     <div class="app-nav-right">
       <div class="app-nav-user">
@@ -37,12 +38,27 @@
     </div>
   </nav>
 
-  <!-- Loading state -->
+  <!-- Agents list (shown when no ?agent= in URL) -->
+  <main class="dashboard-body" id="agentsListPage" style="display:none">
+    <div class="dashboard-hero">
+      <h1>AI Agents 🤖</h1>
+      <p>12 specialist agents ready to work. Pick one and start a conversation.</p>
+    </div>
+    <div class="agents-grid" id="agentsGrid">
+      <div style="color:#475569;font-size:14px;padding:20px;">Loading agents…</div>
+    </div>
+    <section class="recent-section" id="recentSection" style="display:none;">
+      <h2>Recent Conversations</h2>
+      <div class="recent-grid" id="recentGrid"></div>
+    </section>
+  </main>
+
+  <!-- Loading state for single agent -->
   <div id="loadingState" style="display:flex;align-items:center;justify-content:center;height:60vh;color:var(--text-3);font-size:14px;">
     Loading agent…
   </div>
 
-  <!-- Page content (hidden until agent loads) -->
+  <!-- Single agent page content -->
   <div id="agentPage" style="display:none">
 
     <!-- Hero -->
@@ -50,14 +66,14 @@
       <div class="agent-page-orb agent-page-orb-1" id="heroOrb1"></div>
       <div class="agent-page-orb agent-page-orb-2" id="heroOrb2"></div>
       <div class="agent-page-hero-inner">
-        <a href="/dashboard" class="agent-page-back">← All Agents</a>
+        <a href="/agents" class="agent-page-back">← All Agents</a>
         <div class="agent-page-avatar" id="heroAvatar"></div>
         <div class="agent-page-tag" id="heroTag"></div>
         <h1 class="agent-page-name" id="heroName"></h1>
         <p class="agent-page-tagline" id="heroDesc"></p>
         <div class="agent-page-hero-ctas">
           <a href="#" class="btn btn-primary btn-lg" id="heroChatBtn">Chat with me →</a>
-          <a href="/dashboard" class="btn btn-outline btn-lg">See all agents</a>
+          <a href="/agents" class="btn btn-outline btn-lg">See all agents</a>
         </div>
         <div class="agent-page-online">
           <div class="status-dot"></div>
@@ -142,18 +158,77 @@
   const params  = new URLSearchParams(location.search);
   const agentId = params.get("agent") || "";
 
-  if (!agentId) { window.location.href = "/dashboard"; throw new Error("no agent"); }
+  // ── No agent ID → show agents list ───────────────────────────────────────
+  if (!agentId) {
+    document.title = "AI Agents — Mobilions AI";
+    document.getElementById("loadingState").style.display = "none";
+    document.getElementById("agentsListPage").style.display = "block";
 
+    const [agentsRes, convsRes] = await Promise.all([
+      apiFetch("/api/agents"),
+      apiFetch("/api/conversations"),
+    ]);
+    const { agents } = await agentsRes.json();
+    const { conversations } = await convsRes.json();
+
+    const convMap = {};
+    conversations.forEach(c => convMap[c.agentId] = c);
+
+    const grid = document.getElementById("agentsGrid");
+    grid.innerHTML = agents.map(agent => {
+      const conv = convMap[agent.id];
+      const hasConvo = conv && conv.messageCount > 0;
+      return `
+      <a href="/agents?agent=${agent.id}" class="agent-card" style="--glow-color:${agent.color}40">
+        <div class="agent-card-glow"></div>
+        <div class="agent-card-header">
+          <div class="agent-avatar" style="background:${agent.gradient}">${agent.emoji}</div>
+          <div>
+            <div class="agent-tag" style="background:${agent.tagBg};color:${agent.tagColor}">${agent.role.replace("AI ","")}</div>
+            ${hasConvo ? `<div class="has-convo-badge" style="margin-top:4px"><div class="has-convo-dot"></div>${conv.messageCount / 2 | 0} chats</div>` : ""}
+          </div>
+        </div>
+        <div class="agent-name">${agent.name}</div>
+        <div class="agent-role">${agent.role}</div>
+        <div class="agent-desc">${agent.description}</div>
+        <div class="agent-caps">
+          ${agent.capabilities.slice(0,3).map(c => `<span class="agent-cap">${c}</span>`).join("")}
+        </div>
+        <div class="agent-chat-btn">Chat with ${agent.name} →</div>
+      </a>`;
+    }).join("");
+
+    const recent = conversations.filter(c => c.messageCount > 0).slice(0, 6);
+    if (recent.length > 0) {
+      document.getElementById("recentSection").style.display = "block";
+      document.getElementById("recentGrid").innerHTML = recent.map(c => {
+        const agent = agents.find(a => a.id === c.agentId);
+        if (!agent) return "";
+        const lastMsg = c.lastMessage?.content || "";
+        const truncated = lastMsg.length > 60 ? lastMsg.slice(0, 60) + "…" : lastMsg;
+        return `
+        <a href="/chat?agent=${agent.id}" class="recent-card">
+          <div class="recent-avatar" style="background:${agent.gradient}">${agent.emoji}</div>
+          <div class="recent-info">
+            <div class="recent-name">${agent.name} — ${agent.role.replace("AI ","")}</div>
+            <div class="recent-msg">${truncated}</div>
+          </div>
+          <span class="recent-count">${c.messageCount / 2 | 0} msgs</span>
+        </a>`;
+      }).join("");
+    }
+
+  } else {
+
+  // ── Single agent detail ───────────────────────────────────────────────────
   const res = await apiFetch(`/api/agents/${agentId}`);
-  if (!res || !res.ok) { window.location.href = "/dashboard"; throw new Error("not found"); }
+  if (!res || !res.ok) { window.location.href = "/agents"; }
+  else {
   const { agent } = await res.json();
 
-  // ── Populate page ─────────────────────────────────────────────────────────
   document.title = `${agent.name} — ${agent.role} | Mobilions AI`;
-
   const chatUrl = `/chat?agent=${agent.id}`;
 
-  // Hero
   document.getElementById("loadingState").style.display = "none";
   document.getElementById("agentPage").style.display = "block";
 
@@ -161,49 +236,45 @@
   heroSection.style.setProperty("--agent-color", agent.color);
 
   const heroAvatar = document.getElementById("heroAvatar");
-  heroAvatar.textContent  = agent.emoji;
+  heroAvatar.textContent = agent.emoji;
   heroAvatar.style.background = agent.gradient;
 
   document.getElementById("heroOrb1").style.background = `radial-gradient(circle, ${agent.color}30 0%, transparent 70%)`;
   document.getElementById("heroOrb2").style.background = `radial-gradient(circle, ${agent.color}20 0%, transparent 70%)`;
 
-  document.getElementById("heroTag").textContent  = agent.role;
-  document.getElementById("heroTag").style.color  = agent.color;
+  document.getElementById("heroTag").textContent = agent.role;
+  document.getElementById("heroTag").style.color = agent.color;
   document.getElementById("heroTag").style.background = agent.tagBg || `${agent.color}22`;
 
   document.getElementById("heroName").textContent = agent.name;
   document.getElementById("heroDesc").textContent = agent.description;
   document.getElementById("heroChatBtn").href = chatUrl;
 
-  // Capabilities
-  document.getElementById("capTitle").textContent  = agent.role.replace("AI ", "");
-  document.getElementById("capSub").textContent    = `${agent.name} has deep expertise across ${agent.capabilities.length} key areas. Get specialist-quality output instantly.`;
+  document.getElementById("capTitle").textContent = agent.role.replace("AI ", "");
+  document.getElementById("capSub").textContent   = `${agent.name} has deep expertise across ${agent.capabilities.length} key areas. Get specialist-quality output instantly.`;
 
-  const capsGrid = document.getElementById("capsGrid");
-  // Build 6+ items (use capabilities + some generated from role)
-  const caps = agent.capabilities.slice(0, 6);
-  capsGrid.innerHTML = caps.map(cap => `
+  document.getElementById("capsGrid").innerHTML = agent.capabilities.slice(0, 6).map(cap => `
     <div class="agent-cap-card">
       <div class="agent-cap-check" style="color:${agent.color}">✓</div>
       <div class="agent-cap-text">${cap}</div>
     </div>
   `).join("");
 
-  // Examples
-  const examplesGrid = document.getElementById("examplesGrid");
-  examplesGrid.innerHTML = agent.examples.map(ex => `
+  document.getElementById("examplesGrid").innerHTML = agent.examples.map(ex => `
     <a href="${chatUrl}&q=${encodeURIComponent(ex)}" class="agent-example-card">
       <div class="agent-example-icon" style="color:${agent.color}">→</div>
       <div class="agent-example-text">${ex}</div>
     </a>
   `).join("");
 
-  // CTA section
   const ctaAvatar = document.getElementById("ctaAvatar");
   ctaAvatar.textContent = agent.emoji;
   ctaAvatar.style.background = agent.gradient;
   document.getElementById("ctaName").textContent = agent.name;
   document.getElementById("ctaChatBtn").href = chatUrl;
+  }
+
+  } // end else
 </script>
 </body>
 </html>
