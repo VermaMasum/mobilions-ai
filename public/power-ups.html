@@ -23,10 +23,11 @@
       <span class="app-nav-logo-text">Mobilions<span class="app-nav-logo-ai"> AI</span></span>
     </a>
     <div class="app-nav-links">
-      <a href="/dashboard" class="nav-link">Agents</a>
+      <a href="/dashboard" class="nav-link">Home</a>
+      <a href="/integrations" class="nav-link">Integrations</a>
+      <a href="/agents" class="nav-link">AI Agents</a>
       <a href="/power-ups" class="nav-link nav-link--active">Power-Ups</a>
       <a href="/brain" class="nav-link">Brain AI</a>
-      <a href="/integrations" class="nav-link">Integrations</a>
     </div>
     <div class="app-nav-right">
       <div class="app-nav-user">
@@ -101,7 +102,7 @@
 
         <div class="panel-output-wrap" id="outputWrap" style="display:none">
           <div class="panel-output-header">
-            <span class="panel-output-label">Output</span>
+            <span class="panel-output-label">AI Output</span>
             <button class="btn btn-ghost btn-sm" id="copyBtn">📋 Copy</button>
           </div>
           <div class="panel-output" id="outputArea"></div>
@@ -187,6 +188,47 @@
   function getAgentName(id) {
     const names = { aria:"Aria", velo:"Velo", kira:"Kira", dex:"Dex", luma:"Luma", coda:"Coda", nexus:"Nexus", scout:"Scout", mailo:"Mailo", zeno:"Zeno", flow:"Flow", bloom:"Bloom" };
     return names[id] || id;
+  }
+
+  // ── Output formatter ─────────────────────────────────────────────────────
+  function formatOutput(text) {
+    const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    const lines = text.split("\n");
+    let html = "";
+    for (const line of lines) {
+      const t = line.trim();
+      if (!t) { html += "<br>"; continue; }
+      // Numbered list: "1. text"
+      const numMatch = t.match(/^(\d+)\.\s+(.+)/);
+      if (numMatch) {
+        html += `<div class="out-item"><span class="out-item-num">${esc(numMatch[1])}.</span><span>${formatInline(esc(numMatch[2]))}</span></div>`;
+        continue;
+      }
+      // Bullet: "- text" or "• text" or "* text"
+      const bulletMatch = t.match(/^[-•*]\s+(.+)/);
+      if (bulletMatch) {
+        html += `<div class="out-item"><span class="out-bullet">•</span><span>${formatInline(esc(bulletMatch[1]))}</span></div>`;
+        continue;
+      }
+      // Heading: "## text" or "# text" or all-caps short line
+      if (t.startsWith("## ") || t.startsWith("# ")) {
+        html += `<div class="out-heading">${esc(t.replace(/^#+\s+/,""))}</div>`;
+        continue;
+      }
+      // Hashtags line
+      if (t.startsWith("#") && !t.startsWith("##")) {
+        html += `<div style="color:#6366f1;font-weight:500;margin:4px 0">${esc(t)}</div>`;
+        continue;
+      }
+      html += `<div style="margin:2px 0">${formatInline(esc(t))}</div>`;
+    }
+    return html;
+  }
+  function formatInline(s) {
+    return s
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/\*(.+?)\*/g, "<em>$1</em>")
+      .replace(/`(.+?)`/g, `<code style="background:rgba(99,102,241,.15);padding:1px 6px;border-radius:4px;font-size:13px;color:#a5b4fc">$1</code>`);
   }
 
   // ── Panel logic ──────────────────────────────────────────────────────────
@@ -287,37 +329,15 @@
         body: JSON.stringify(fields),
       });
 
+      const data = await response.json().catch(() => ({}));
+
       if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        outArea.textContent = "Error: " + (errData.error || response.statusText);
+        outArea.textContent = "Error: " + (data.error || response.statusText);
         return;
       }
 
-      const reader  = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer    = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() ?? "";
-        for (const line of lines) {
-          if (!line.startsWith("data: ")) continue;
-          const data = line.slice(6).trim();
-          if (data === "[DONE]") break;
-          try {
-            const parsed = JSON.parse(data);
-            if (parsed.error) { outArea.textContent += `\n\nError: ${parsed.error}`; break; }
-            if (parsed.delta) {
-              outputText += parsed.delta;
-              outArea.textContent = outputText;
-              outArea.scrollTop = outArea.scrollHeight;
-            }
-          } catch { /* ignore */ }
-        }
-      }
+      outputText = data.result || "";
+      outArea.innerHTML = formatOutput(outputText);
     } catch (err) {
       outArea.textContent = "Connection error. Please try again.";
     } finally {

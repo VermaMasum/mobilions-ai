@@ -344,35 +344,84 @@
 }
 
 .panel-output-wrap {
-  background: rgba(0,0,0,.3);
-  border: 1px solid var(--border);
+  background: linear-gradient(135deg, rgba(99,102,241,.07), rgba(168,85,247,.05));
+  border: 1px solid rgba(99,102,241,.3);
   border-radius: var(--r);
   overflow: hidden;
+  box-shadow: 0 4px 24px rgba(99,102,241,.08);
+  margin-top: 8px;
 }
 .panel-output-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border);
-  background: rgba(255,255,255,.02);
+  padding: 14px 20px;
+  border-bottom: 1px solid rgba(99,102,241,.2);
+  background: linear-gradient(90deg, rgba(99,102,241,.12), rgba(168,85,247,.08));
 }
 .panel-output-label {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
-  color: var(--text-3);
+  background: linear-gradient(90deg, #6366f1, #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   text-transform: uppercase;
-  letter-spacing: .08em;
+  letter-spacing: .1em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.panel-output-label::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  -webkit-text-fill-color: unset;
+  flex-shrink: 0;
 }
 .panel-output {
-  padding: 16px;
-  font-size: 13px;
-  line-height: 1.7;
-  color: var(--text-1);
+  padding: 24px;
+  font-size: 15px;
+  line-height: 1.85;
+  color: #e2e8f0;
   white-space: pre-wrap;
-  max-height: 400px;
+  max-height: 600px;
   overflow-y: auto;
   font-family: inherit;
+  word-break: break-word;
+}
+.panel-output::-webkit-scrollbar { width: 4px; }
+.panel-output::-webkit-scrollbar-track { background: transparent; }
+.panel-output::-webkit-scrollbar-thumb { background: rgba(99,102,241,.3); border-radius: 4px; }
+.panel-output b, .panel-output strong { color: #f1f5f9; font-weight: 700; }
+.panel-output .out-heading {
+  font-size: 16px;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin: 16px 0 6px;
+  border-bottom: 1px solid rgba(99,102,241,.2);
+  padding-bottom: 4px;
+}
+.panel-output .out-item {
+  display: flex;
+  gap: 10px;
+  margin: 4px 0;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: rgba(255,255,255,.03);
+}
+.panel-output .out-item-num {
+  color: #6366f1;
+  font-weight: 700;
+  flex-shrink: 0;
+  min-width: 20px;
+}
+.panel-output .out-bullet {
+  color: #a855f7;
+  flex-shrink: 0;
 }
 
 /* ── Brain AI ─────────────────────────────────────────────────────────────── */
