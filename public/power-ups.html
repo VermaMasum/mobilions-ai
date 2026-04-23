@@ -288,7 +288,8 @@
       });
 
       if (!response.ok) {
-        outArea.textContent = "Error: " + (await response.json().catch(() => ({})).error || response.statusText);
+        const errData = await response.json().catch(() => ({}));
+        outArea.textContent = "Error: " + (errData.error || response.statusText);
         return;
       }
 
