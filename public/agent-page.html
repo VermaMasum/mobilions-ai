@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AI Agent — Mobilions AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/app-styles.css" />
+  <link rel="stylesheet" href="/app-extended.css" />
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- Navbar -->
+  <nav class="app-nav">
+    <a href="/dashboard" class="app-nav-logo">
+      <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
+        <circle cx="14" cy="14" r="14" fill="url(#navLg5)"/>
+        <path d="M8 19L14 9L20 19" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="14" cy="9" r="2" fill="white"/>
+        <defs><linearGradient id="navLg5" x1="0" y1="0" x2="28" y2="28"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs>
+      </svg>
+      <span class="app-nav-logo-text">Mobilions<span class="app-nav-logo-ai"> AI</span></span>
+    </a>
+    <div class="app-nav-links">
+      <a href="/dashboard" class="nav-link">Agents</a>
+      <a href="/power-ups" class="nav-link">Power-Ups</a>
+      <a href="/brain" class="nav-link">Brain AI</a>
+      <a href="/integrations" class="nav-link">Integrations</a>
+    </div>
+    <div class="app-nav-right">
+      <div class="app-nav-user">
+        <div class="user-avatar" id="userAvatar">U</div>
+        <span class="user-name" id="userName">Loading…</span>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="logoutBtn">Log out</button>
+    </div>
+  </nav>
+
+  <!-- Loading state -->
+  <div id="loadingState" style="display:flex;align-items:center;justify-content:center;height:60vh;color:var(--text-3);font-size:14px;">
+    Loading agent…
+  </div>
+
+  <!-- Page content (hidden until agent loads) -->
+  <div id="agentPage" style="display:none">
+
+    <!-- Hero -->
+    <section class="agent-page-hero" id="agentHero">
+      <div class="agent-page-orb agent-page-orb-1" id="heroOrb1"></div>
+      <div class="agent-page-orb agent-page-orb-2" id="heroOrb2"></div>
+      <div class="agent-page-hero-inner">
+        <a href="/dashboard" class="agent-page-back">← All Agents</a>
+        <div class="agent-page-avatar" id="heroAvatar"></div>
+        <div class="agent-page-tag" id="heroTag"></div>
+        <h1 class="agent-page-name" id="heroName"></h1>
+        <p class="agent-page-tagline" id="heroDesc"></p>
+        <div class="agent-page-hero-ctas">
+          <a href="#" class="btn btn-primary btn-lg" id="heroChatBtn">Chat with me →</a>
+          <a href="/dashboard" class="btn btn-outline btn-lg">See all agents</a>
+        </div>
+        <div class="agent-page-online">
+          <div class="status-dot"></div>
+          <span>Online · Available 24/7 · Responds in seconds</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Capabilities -->
+    <section class="agent-section">
+      <div class="agent-section-inner">
+        <div class="agent-section-label">What I Can Do</div>
+        <h2 class="agent-section-title">Your Expert AI <span class="gtext" id="capTitle"></span></h2>
+        <p class="agent-section-sub" id="capSub"></p>
+        <div class="agent-caps-grid" id="capsGrid"></div>
+      </div>
+    </section>
+
+    <!-- Try asking -->
+    <section class="agent-section agent-section--alt">
+      <div class="agent-section-inner">
+        <div class="agent-section-label">Examples</div>
+        <h2 class="agent-section-title">Try Asking Me…</h2>
+        <p class="agent-section-sub">Click any prompt below to start a conversation.</p>
+        <div class="agent-examples-grid" id="examplesGrid"></div>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="agent-section">
+      <div class="agent-section-inner">
+        <div class="agent-section-label">How It Works</div>
+        <h2 class="agent-section-title">Simple as 1-2-3</h2>
+        <div class="agent-how-grid">
+          <div class="agent-how-item">
+            <div class="agent-how-num">01</div>
+            <h3>Start a chat</h3>
+            <p>Open a conversation and describe what you need. No prompting expertise required — just talk naturally.</p>
+          </div>
+          <div class="agent-how-arrow">→</div>
+          <div class="agent-how-item">
+            <div class="agent-how-num">02</div>
+            <h3>Get expert output</h3>
+            <p>Your AI agent instantly generates specialist-quality output, tailored to your specific situation and business context.</p>
+          </div>
+          <div class="agent-how-arrow">→</div>
+          <div class="agent-how-item">
+            <div class="agent-how-num">03</div>
+            <h3>Refine & use</h3>
+            <p>Ask for revisions, request alternatives, or dive deeper. Each conversation builds on itself — your agent learns your preferences.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="agent-cta-section">
+      <div class="agent-cta-inner">
+        <div class="agent-cta-avatar" id="ctaAvatar"></div>
+        <h2>Ready to work with <span id="ctaName"></span>?</h2>
+        <p>Join thousands of professionals getting expert AI help — available 24/7, no wait time.</p>
+        <a href="#" class="btn btn-primary btn-lg" id="ctaChatBtn">Start chatting now →</a>
+      </div>
+    </section>
+
+  </div>
+
+</div>
+
+<script type="module">
+  import { requireAuth, getUser, clearSession, getInitials, apiFetch } from "/auth.js";
+  if (!requireAuth()) throw new Error("not authed");
+
+  const user = getUser();
+  document.getElementById("userName").textContent = user?.name || "User";
+  document.getElementById("userAvatar").textContent = getInitials(user?.name || "U");
+  document.getElementById("logoutBtn").addEventListener("click", () => {
+    clearSession(); window.location.href = "/login";
+  });
+
+  // ── Get agent ID from URL ─────────────────────────────────────────────────
+  const params  = new URLSearchParams(location.search);
+  const agentId = params.get("agent") || "";
+
+  if (!agentId) { window.location.href = "/dashboard"; throw new Error("no agent"); }
+
+  const res = await apiFetch(`/api/agents/${agentId}`);
+  if (!res || !res.ok) { window.location.href = "/dashboard"; throw new Error("not found"); }
+  const { agent } = await res.json();
+
+  // ── Populate page ─────────────────────────────────────────────────────────
+  document.title = `${agent.name} — ${agent.role} | Mobilions AI`;
+
+  const chatUrl = `/chat?agent=${agent.id}`;
+
+  // Hero
+  document.getElementById("loadingState").style.display = "none";
+  document.getElementById("agentPage").style.display = "block";
+
+  const heroSection = document.getElementById("agentHero");
+  heroSection.style.setProperty("--agent-color", agent.color);
+
+  const heroAvatar = document.getElementById("heroAvatar");
+  heroAvatar.textContent  = agent.emoji;
+  heroAvatar.style.background = agent.gradient;
+
+  document.getElementById("heroOrb1").style.background = `radial-gradient(circle, ${agent.color}30 0%, transparent 70%)`;
+  document.getElementById("heroOrb2").style.background = `radial-gradient(circle, ${agent.color}20 0%, transparent 70%)`;
+
+  document.getElementById("heroTag").textContent  = agent.role;
+  document.getElementById("heroTag").style.color  = agent.color;
+  document.getElementById("heroTag").style.background = agent.tagBg || `${agent.color}22`;
+
+  document.getElementById("heroName").textContent = agent.name;
+  document.getElementById("heroDesc").textContent = agent.description;
+  document.getElementById("heroChatBtn").href = chatUrl;
+
+  // Capabilities
+  document.getElementById("capTitle").textContent  = agent.role.replace("AI ", "");
+  document.getElementById("capSub").textContent    = `${agent.name} has deep expertise across ${agent.capabilities.length} key areas. Get specialist-quality output instantly.`;
+
+  const capsGrid = document.getElementById("capsGrid");
+  // Build 6+ items (use capabilities + some generated from role)
+  const caps = agent.capabilities.slice(0, 6);
+  capsGrid.innerHTML = caps.map(cap => `
+    <div class="agent-cap-card">
+      <div class="agent-cap-check" style="color:${agent.color}">✓</div>
+      <div class="agent-cap-text">${cap}</div>
+    </div>
+  `).join("");
+
+  // Examples
+  const examplesGrid = document.getElementById("examplesGrid");
+  examplesGrid.innerHTML = agent.examples.map(ex => `
+    <a href="${chatUrl}&q=${encodeURIComponent(ex)}" class="agent-example-card">
+      <div class="agent-example-icon" style="color:${agent.color}">→</div>
+      <div class="agent-example-text">${ex}</div>
+    </a>
+  `).join("");
+
+  // CTA section
+  const ctaAvatar = document.getElementById("ctaAvatar");
+  ctaAvatar.textContent = agent.emoji;
+  ctaAvatar.style.background = agent.gradient;
+  document.getElementById("ctaName").textContent = agent.name;
+  document.getElementById("ctaChatBtn").href = chatUrl;
+</script>
+</body>
+</html>

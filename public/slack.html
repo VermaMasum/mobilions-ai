@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Slack — Mobilions AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/app-styles.css" />
+  <link rel="stylesheet" href="/app-extended.css" />
+  <style>
+    .slack-layout { display:flex; height:100vh; overflow:hidden; }
+
+    /* Sidebar */
+    .slack-sidebar {
+      width:260px; flex-shrink:0; display:flex; flex-direction:column;
+      background:var(--bg-1); border-right:1px solid var(--border); overflow:hidden;
+    }
+    .slack-sidebar-header { padding:16px 18px; border-bottom:1px solid var(--border); }
+    .slack-sidebar-header h2 { font-size:16px; font-weight:700; margin-bottom:4px; }
+    .slack-connected-info { font-size:12px; color:var(--text-3); }
+    .channel-list { flex:1; overflow-y:auto; padding:8px 0; }
+    .channel-section-title {
+      font-size:11px; font-weight:700; color:var(--text-3);
+      text-transform:uppercase; letter-spacing:.05em;
+      padding:8px 18px 4px;
+    }
+    .channel-item {
+      display:flex; align-items:center; gap:8px;
+      padding:7px 18px; cursor:pointer; transition:background var(--tr);
+      border-radius:0; font-size:13px; color:var(--text-2);
+    }
+    .channel-item:hover { background:rgba(255,255,255,.05); color:var(--text-1); }
+    .channel-item.active { background:rgba(99,102,241,.15); color:var(--text-1); font-weight:600; }
+    .channel-hash { font-size:15px; opacity:.6; }
+    .channel-name { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .unread-dot { width:7px; height:7px; border-radius:50%; background:var(--accent); margin-left:auto; flex-shrink:0; }
+
+    /* Main */
+    .slack-main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+    .slack-topbar {
+      display:flex; align-items:center; gap:14px; padding:14px 20px;
+      border-bottom:1px solid var(--border);
+      background:rgba(4,4,15,.85); backdrop-filter:blur(20px);
+    }
+    .slack-topbar h1 { font-size:17px; font-weight:700; }
+    .slack-topbar-right { margin-left:auto; display:flex; gap:8px; }
+    .slack-content { flex:1; overflow:hidden; display:flex; flex-direction:column; }
+
+    /* Messages area */
+    .messages-area { flex:1; overflow-y:auto; padding:20px 24px; display:flex; flex-direction:column; gap:2px; }
+    .msg-item { display:flex; gap:10px; padding:4px 0; border-radius:6px; }
+    .msg-item:hover { background:rgba(255,255,255,.03); }
+    .msg-avatar {
+      width:32px; height:32px; border-radius:6px;
+      background:linear-gradient(135deg,#6366f1,#a855f7);
+      flex-shrink:0; display:flex; align-items:center; justify-content:center;
+      font-size:13px; font-weight:700; color:#fff; margin-top:2px;
+    }
+    .msg-body { flex:1; min-width:0; }
+    .msg-header { display:flex; align-items:baseline; gap:8px; margin-bottom:2px; }
+    .msg-user { font-size:13px; font-weight:700; color:var(--text-1); }
+    .msg-time { font-size:11px; color:var(--text-3); }
+    .msg-text { font-size:13px; color:var(--text-2); line-height:1.5; word-break:break-word; white-space:pre-wrap; }
+
+    /* Empty state */
+    .slack-empty {
+      flex:1; display:flex; flex-direction:column; align-items:center;
+      justify-content:center; text-align:center; padding:40px;
+    }
+    .slack-empty-icon { font-size:56px; margin-bottom:20px; }
+    .slack-empty h3 { font-size:20px; font-weight:700; margin-bottom:8px; }
+    .slack-empty p { font-size:14px; color:var(--text-2); max-width:320px; line-height:1.7; }
+
+    /* Send bar */
+    .slack-send-bar {
+      padding:12px 20px; border-top:1px solid var(--border);
+      display:flex; gap:10px; align-items:flex-end;
+      background:var(--bg-0);
+    }
+    .slack-send-input {
+      flex:1; background:var(--bg-2); border:1px solid var(--border);
+      border-radius:10px; padding:10px 14px; color:var(--text-1); font-size:13px;
+      outline:none; font-family:inherit; resize:none; min-height:40px; max-height:120px;
+      line-height:1.5;
+    }
+    .slack-send-input:focus { border-color:rgba(99,102,241,.45); }
+
+    /* AI panel */
+    .slack-ai-panel {
+      border-top:1px solid var(--border); background:var(--bg-1);
+      display:flex; flex-direction:column; max-height:320px;
+    }
+    .slack-ai-header {
+      display:flex; align-items:center; gap:10px; padding:11px 16px;
+      border-bottom:1px solid var(--border); font-size:13px; font-weight:600;
+    }
+    .slack-ai-messages { flex:1; overflow-y:auto; padding:12px 16px; min-height:60px; max-height:160px; }
+    .slack-ai-msg { font-size:13px; line-height:1.6; margin-bottom:8px; }
+    .slack-ai-msg.user-msg { color:var(--text-2); }
+    .slack-ai-msg.ai-msg   { color:var(--text-1); white-space:pre-wrap; }
+    .slack-ai-input-row { display:flex; gap:8px; padding:10px 16px; border-top:1px solid var(--border); }
+    .slack-ai-input {
+      flex:1; background:var(--bg-2); border:1px solid var(--border);
+      border-radius:8px; padding:8px 12px; color:var(--text-1); font-size:13px;
+      outline:none; font-family:inherit;
+    }
+    .slack-ai-input:focus { border-color:rgba(99,102,241,.45); }
+    .ai-quick-btns { display:flex; gap:6px; padding:8px 16px 0; flex-wrap:wrap; }
+    .ai-quick-btn {
+      font-size:11px; padding:4px 10px; border-radius:20px;
+      background:rgba(99,102,241,.12); border:1px solid rgba(99,102,241,.25);
+      color:#a5b4fc; cursor:pointer; transition:background .15s;
+    }
+    .ai-quick-btn:hover { background:rgba(99,102,241,.25); }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+
+  <nav class="app-nav">
+    <a href="/dashboard" class="app-nav-logo">
+      <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
+        <circle cx="14" cy="14" r="14" fill="url(#navLgS)"/>
+        <path d="M8 19L14 9L20 19" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="14" cy="9" r="2" fill="white"/>
+        <defs><linearGradient id="navLgS" x1="0" y1="0" x2="28" y2="28"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs>
+      </svg>
+      <span class="app-nav-logo-text">Mobilions<span class="app-nav-logo-ai"> AI</span></span>
+    </a>
+    <div class="app-nav-links">
+      <a href="/dashboard" class="nav-link">Agents</a>
+      <a href="/power-ups" class="nav-link">Power-Ups</a>
+      <a href="/brain" class="nav-link">Brain AI</a>
+      <a href="/integrations" class="nav-link nav-link--active">Integrations</a>
+    </div>
+    <div class="app-nav-right">
+      <div class="user-avatar" id="userAvatar">U</div>
+      <button class="btn btn-ghost btn-sm" id="logoutBtn">Log out</button>
+    </div>
+  </nav>
+
+  <div style="flex:1;display:flex;overflow:hidden;">
+  <div class="slack-layout" style="flex:1;">
+
+    <!-- Channels sidebar -->
+    <aside class="slack-sidebar">
+      <div class="slack-sidebar-header">
+        <h2>💬 Slack</h2>
+        <div class="slack-connected-info" id="connectedInfo">Loading…</div>
+      </div>
+      <div class="channel-list" id="channelList">
+        <div style="padding:20px;color:var(--text-3);font-size:13px;">Loading channels…</div>
+      </div>
+    </aside>
+
+    <!-- Main area -->
+    <main class="slack-main">
+      <div class="slack-topbar">
+        <h1 id="topbarTitle">Select a channel</h1>
+        <div class="slack-topbar-right">
+          <button class="btn btn-outline btn-sm" id="aiDraftBtn" style="display:none;">🤖 AI Draft</button>
+          <button class="btn btn-ghost btn-sm" id="toggleAiBtn">🤖 Ask AI</button>
+        </div>
+      </div>
+
+      <div class="slack-content">
+        <!-- Empty state -->
+        <div class="slack-empty" id="emptyState">
+          <div class="slack-empty-icon">💬</div>
+          <h3>Your Slack, supercharged</h3>
+          <p>Select a channel to read messages, send replies, and use AI to draft the perfect message.</p>
+          <button class="btn btn-primary" id="openAiBtn" style="margin-top:20px;">🤖 Ask AI about your workspace</button>
+        </div>
+
+        <!-- Messages -->
+        <div class="messages-area" id="messagesArea" style="display:none;"></div>
+
+        <!-- Send bar -->
+        <div class="slack-send-bar" id="sendBar" style="display:none;">
+          <textarea class="slack-send-input" id="sendInput" rows="1"
+            placeholder="Message…"></textarea>
+          <button class="btn btn-primary btn-sm" id="sendBtn">Send</button>
+        </div>
+
+        <!-- AI panel -->
+        <div class="slack-ai-panel" id="aiPanel" style="display:none;">
+          <div class="slack-ai-header">
+            <span>🤖</span> Aria — AI Slack Assistant
+            <button class="btn btn-ghost btn-sm" id="closeAiPanel" style="margin-left:auto;">✕</button>
+          </div>
+          <div class="ai-quick-btns">
+            <button class="ai-quick-btn" data-q="Summarize the recent messages in this channel">Summarize channel</button>
+            <button class="ai-quick-btn" data-q="What are the action items from recent messages?">Action items</button>
+            <button class="ai-quick-btn" data-q="Draft a friendly status update message">Status update</button>
+            <button class="ai-quick-btn" data-q="What channels do I have?">My channels</button>
+          </div>
+          <div class="slack-ai-messages" id="aiMessages"></div>
+          <div class="slack-ai-input-row">
+            <input class="slack-ai-input" id="aiInput" placeholder="Ask about your Slack or say 'Draft a reply to the latest message'…" />
+            <button class="btn btn-primary btn-sm" id="aiSendBtn">Send</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  </div>
+</div>
+
+<script type="module">
+  import { requireAuth, getUser, getToken, clearSession, getInitials, apiFetch } from "/auth.js";
+  if (!requireAuth()) throw new Error("not authed");
+
+  const user = getUser();
+  document.getElementById("userAvatar").textContent = getInitials(user?.name || "U");
+  document.getElementById("logoutBtn").addEventListener("click", () => { clearSession(); window.location.href = "/login"; });
+
+  let currentChannel = null;
+  let allChannels    = [];
+
+  // ── Load channels ──────────────────────────────────────────────────────────
+  async function loadChannels() {
+    const list = document.getElementById("channelList");
+    try {
+      const res = await apiFetch("/api/integrations/slack/channels");
+      if (!res || !res.ok) {
+        const err = res ? await res.json().catch(() => ({})) : {};
+        const msg = err.error || "Failed to load channels";
+        if (msg.includes("not connected")) {
+          list.innerHTML = `
+            <div style="padding:20px;text-align:center;">
+              <div style="font-size:32px;margin-bottom:12px;">💬</div>
+              <div style="font-size:13px;color:var(--text-2);margin-bottom:14px;">Slack not connected.</div>
+              <a href="/integrations" class="btn btn-primary btn-sm" style="display:inline-flex;">Connect Slack</a>
+            </div>`;
+          document.getElementById("connectedInfo").textContent = "Not connected";
+        } else {
+          list.innerHTML = `<div style="padding:20px;color:#f87171;font-size:13px;">${msg}</div>`;
+        }
+        return;
+      }
+      const data = await res.json();
+      allChannels = data.channels || [];
+      document.getElementById("connectedInfo").textContent = data.connectedEmail || "";
+      renderChannelList(allChannels);
+    } catch (e) {
+      list.innerHTML = `<div style="padding:20px;color:#f87171;font-size:13px;">Error: ${e.message}</div>`;
+    }
+  }
+
+  function renderChannelList(channels) {
+    const list = document.getElementById("channelList");
+    if (!channels.length) {
+      list.innerHTML = `<div style="padding:20px;color:var(--text-3);font-size:13px;">No channels found.</div>`;
+      return;
+    }
+    const public_ch  = channels.filter(c => !c.is_private && !c.is_im);
+    const private_ch = channels.filter(c => c.is_private);
+
+    let html = "";
+    if (public_ch.length) {
+      html += `<div class="channel-section-title">Channels</div>`;
+      html += public_ch.map(c => channelItem(c)).join("");
+    }
+    if (private_ch.length) {
+      html += `<div class="channel-section-title">Private</div>`;
+      html += private_ch.map(c => channelItem(c)).join("");
+    }
+    list.innerHTML = html;
+    list.querySelectorAll(".channel-item").forEach(el => {
+      el.addEventListener("click", () => openChannel(el.dataset.id));
+    });
+  }
+
+  function channelItem(c) {
+    return `
+      <div class="channel-item" data-id="${c.id}" data-name="${escHtml(c.name || "")}">
+        <span class="channel-hash">${c.is_private ? "🔒" : "#"}</span>
+        <span class="channel-name">${escHtml(c.name || "unknown")}</span>
+      </div>`;
+  }
+
+  // ── Open channel ───────────────────────────────────────────────────────────
+  async function openChannel(channelId) {
+    const ch = allChannels.find(c => c.id === channelId);
+    if (!ch) return;
+    currentChannel = ch;
+
+    document.querySelectorAll(".channel-item").forEach(el => el.classList.toggle("active", el.dataset.id === channelId));
+    document.getElementById("emptyState").style.display = "none";
+    document.getElementById("messagesArea").style.display = "flex";
+    document.getElementById("sendBar").style.display = "flex";
+    document.getElementById("aiDraftBtn").style.display = "";
+    document.getElementById("topbarTitle").textContent = `#${ch.name}`;
+    document.getElementById("messagesArea").innerHTML = `<div style="color:var(--text-3);font-size:13px;">Loading messages…</div>`;
+
+    try {
+      const res = await apiFetch(`/api/integrations/slack/channels/${channelId}/messages`);
+      if (!res?.ok) { document.getElementById("messagesArea").innerHTML = `<div style="color:#f87171;font-size:13px;">Failed to load messages.</div>`; return; }
+      const { messages } = await res.json();
+      renderMessages(messages.slice().reverse());
+    } catch (e) {
+      document.getElementById("messagesArea").innerHTML = `<div style="color:#f87171;font-size:13px;">Error: ${e.message}</div>`;
+    }
+  }
+
+  function renderMessages(messages) {
+    const area = document.getElementById("messagesArea");
+    if (!messages.length) {
+      area.innerHTML = `<div style="color:var(--text-3);font-size:13px;text-align:center;padding:20px;">No messages yet.</div>`;
+      return;
+    }
+    area.innerHTML = messages.map(m => {
+      const userId  = m.user || "bot";
+      const initials = userId.slice(0, 2).toUpperCase();
+      const time    = formatTs(m.ts);
+      const text    = escHtml(m.text || "").replace(/\n/g, "<br>");
+      return `
+        <div class="msg-item">
+          <div class="msg-avatar">${initials}</div>
+          <div class="msg-body">
+            <div class="msg-header">
+              <span class="msg-user">${escHtml(userId)}</span>
+              <span class="msg-time">${time}</span>
+            </div>
+            <div class="msg-text">${text}</div>
+          </div>
+        </div>`;
+    }).join("");
+    area.scrollTop = area.scrollHeight;
+  }
+
+  // ── Send message ───────────────────────────────────────────────────────────
+  document.getElementById("sendBtn").addEventListener("click", sendMsg);
+  document.getElementById("sendInput").addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMsg(); }
+  });
+
+  async function sendMsg() {
+    const input = document.getElementById("sendInput");
+    const text  = input.value.trim();
+    if (!text || !currentChannel) return;
+    input.value = "";
+
+    const res = await apiFetch("/api/integrations/slack/send", {
+      method: "POST",
+      body: JSON.stringify({ channelId: currentChannel.id, text }),
+    });
+    if (res?.ok) {
+      // Reload messages after short delay
+      setTimeout(() => openChannel(currentChannel.id), 800);
+    }
+  }
+
+  // ── AI panel ───────────────────────────────────────────────────────────────
+  document.getElementById("openAiBtn").addEventListener("click", showAiPanel);
+  document.getElementById("toggleAiBtn").addEventListener("click", () => {
+    const panel = document.getElementById("aiPanel");
+    panel.style.display = panel.style.display === "none" ? "flex" : "none";
+    if (panel.style.display === "flex") panel.style.flexDirection = "column";
+  });
+  document.getElementById("closeAiPanel").addEventListener("click", () => {
+    document.getElementById("aiPanel").style.display = "none";
+  });
+  document.getElementById("aiSendBtn").addEventListener("click", askAI);
+  document.getElementById("aiInput").addEventListener("keydown", e => { if (e.key === "Enter") askAI(); });
+
+  document.getElementById("aiDraftBtn").addEventListener("click", () => {
+    document.getElementById("aiInput").value = `Draft a concise, friendly message I can send in #${currentChannel?.name || "this channel"}`;
+    showAiPanel(); askAI();
+  });
+
+  document.querySelectorAll(".ai-quick-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.getElementById("aiInput").value = btn.dataset.q;
+      showAiPanel(); askAI();
+    });
+  });
+
+  function showAiPanel() {
+    const panel = document.getElementById("aiPanel");
+    panel.style.display = "flex";
+    panel.style.flexDirection = "column";
+  }
+
+  async function askAI() {
+    const input = document.getElementById("aiInput");
+    const msg   = input.value.trim();
+    if (!msg) return;
+    input.value = "";
+    showAiPanel();
+
+    const messagesEl = document.getElementById("aiMessages");
+    messagesEl.innerHTML += `<div class="slack-ai-msg user-msg">You: ${escHtml(msg)}</div>`;
+    const aiMsgEl = document.createElement("div");
+    aiMsgEl.className = "slack-ai-msg ai-msg";
+    aiMsgEl.textContent = "🤖 ";
+    messagesEl.appendChild(aiMsgEl);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+
+    const body = { message: msg };
+    if (currentChannel) { body.channelId = currentChannel.id; body.channelName = `#${currentChannel.name}`; }
+
+    const res = await fetch("/api/integrations/slack/ask", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${getToken()}` },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) { aiMsgEl.textContent = "🤖 Error: could not get response."; return; }
+
+    const reader  = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = ""; let content = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+      for (const line of lines) {
+        if (!line.startsWith("data: ")) continue;
+        const data = line.slice(6).trim();
+        if (data === "[DONE]") break;
+        try {
+          const d = JSON.parse(data);
+          if (d.delta) { content += d.delta; aiMsgEl.textContent = "🤖 " + content; messagesEl.scrollTop = messagesEl.scrollHeight; }
+        } catch {}
+      }
+    }
+
+    // If AI drafted a message, offer to send it
+    const draftKeywords = ["draft","write","send","compose","create","reply","message","post"];
+    if (content && currentChannel && draftKeywords.some(k => msg.toLowerCase().includes(k))) {
+      const useBtn = document.createElement("button");
+      useBtn.className = "btn btn-outline btn-sm";
+      useBtn.style.cssText = "margin-top:8px;font-size:12px;";
+      useBtn.textContent = "↑ Use this in message box";
+      useBtn.addEventListener("click", () => {
+        document.getElementById("sendInput").value = content.replace(/^🤖\s*/, "");
+        document.getElementById("sendInput").focus();
+      });
+
+      const sendDirectBtn = document.createElement("button");
+      sendDirectBtn.className = "btn btn-primary btn-sm";
+      sendDirectBtn.style.cssText = "margin-top:8px;margin-left:6px;font-size:12px;";
+      sendDirectBtn.textContent = "⚡ Send directly";
+      sendDirectBtn.addEventListener("click", async () => {
+        const text = content.replace(/^🤖\s*/, "").trim();
+        if (!text) return;
+        sendDirectBtn.disabled = true;
+        sendDirectBtn.textContent = "Sending…";
+        const r = await apiFetch("/api/integrations/slack/send", {
+          method: "POST",
+          body: JSON.stringify({ channelId: currentChannel.id, text }),
+        });
+        if (r?.ok) {
+          sendDirectBtn.textContent = "✓ Sent!";
+          setTimeout(() => openChannel(currentChannel.id), 800);
+        } else {
+          sendDirectBtn.textContent = "⚡ Send directly";
+          sendDirectBtn.disabled = false;
+        }
+      });
+
+      messagesEl.appendChild(useBtn);
+      messagesEl.appendChild(sendDirectBtn);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+  }
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  function escHtml(s) {
+    return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+
+  function formatTs(ts) {
+    if (!ts) return "";
+    try {
+      return new Date(parseFloat(ts) * 1000).toLocaleString("en-US", {
+        month:"short", day:"numeric", hour:"numeric", minute:"2-digit", hour12:true,
+      });
+    } catch { return ""; }
+  }
+
+  loadChannels();
+</script>
+</body>
+</html>

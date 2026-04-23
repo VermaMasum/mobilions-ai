@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mobilions AI — Your Intelligent Workforce</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ───────── NAVBAR ───────── -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="#" class="nav-logo">
+        <span class="logo-icon">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <circle cx="14" cy="14" r="14" fill="url(#logoGrad)"/>
+            <path d="M8 19 L14 9 L20 19" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="14" cy="9" r="2" fill="white"/>
+            <defs>
+              <linearGradient id="logoGrad" x1="0" y1="0" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#6366f1"/>
+                <stop offset="1" stop-color="#a855f7"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </span>
+        <span class="logo-text">Mobilions<span class="logo-ai"> AI</span></span>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="#agents">AI Team</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <a href="/login" class="btn-ghost">Log in</a>
+        <a href="/signup" class="btn-primary">Get Started Free</a>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile menu -->
+  <div class="mobile-menu" id="mobileMenu">
+    <ul>
+      <li><a href="#agents" class="mobile-link">AI Team</a></li>
+      <li><a href="#features" class="mobile-link">Features</a></li>
+      <li><a href="#how-it-works" class="mobile-link">How It Works</a></li>
+      <li><a href="#pricing" class="mobile-link">Pricing</a></li>
+      <li><a href="#" class="btn-primary w-full">Get Started Free</a></li>
+    </ul>
+  </div>
+
+  <!-- ───────── HERO ───────── -->
+  <section class="hero" id="hero">
+    <!-- Background orbs -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <!-- Noise overlay -->
+    <div class="noise"></div>
+
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="badge-dot"></span>
+        Introducing Mobilions AI Team — 12 Specialized Agents
+      </div>
+
+      <h1 class="hero-title">
+        Hire Your Entire<br />
+        <span class="gradient-text">AI Workforce</span><br />
+        in One Click
+      </h1>
+
+      <p class="hero-subtitle">
+        Stop juggling tools. Mobilions AI gives you a dedicated team of 12 intelligent agents — each an expert in their domain — working 24/7 to scale your business without scaling your headcount.
+      </p>
+
+      <div class="hero-cta">
+        <a href="/signup" class="btn-primary btn-large">Start Free for 7 Days</a>
+        <a href="#agents" class="btn-outline btn-large">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M6.5 5.5L10 8L6.5 10.5" fill="currentColor"/>
+          </svg>
+          Meet the Team
+        </a>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-num">12</span>
+          <span class="stat-label">AI Specialists</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-num">100+</span>
+          <span class="stat-label">Integrations</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-num">24/7</span>
+          <span class="stat-label">Always On</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-num">50+</span>
+          <span class="stat-label">Languages</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating agent preview cards -->
+    <div class="hero-agents-preview">
+      <div class="preview-card preview-card--1">
+        <div class="preview-avatar" style="background: linear-gradient(135deg,#f43f5e,#fb923c)">🎯</div>
+        <div class="preview-info">
+          <strong>Velo</strong>
+          <span>Sales Manager</span>
+        </div>
+        <div class="preview-status"></div>
+      </div>
+      <div class="preview-card preview-card--2">
+        <div class="preview-avatar" style="background: linear-gradient(135deg,#8b5cf6,#ec4899)">✨</div>
+        <div class="preview-info">
+          <strong>Aria</strong>
+          <span>Social Media</span>
+        </div>
+        <div class="preview-status"></div>
+      </div>
+      <div class="preview-card preview-card--3">
+        <div class="preview-avatar" style="background: linear-gradient(135deg,#06b6d4,#6366f1)">📊</div>
+        <div class="preview-info">
+          <strong>Dex</strong>
+          <span>Data Analyst</span>
+        </div>
+        <div class="preview-status"></div>
+      </div>
+      <div class="preview-card preview-card--4">
+        <div class="preview-avatar" style="background: linear-gradient(135deg,#10b981,#06b6d4)">🛡️</div>
+        <div class="preview-info">
+          <strong>Kira</strong>
+          <span>Customer Support</span>
+        </div>
+        <div class="preview-status"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────── SOCIAL PROOF ───────── -->
+  <section class="social-proof">
+    <div class="container">
+      <p class="proof-label">Trusted by fast-moving teams worldwide</p>
+      <div class="proof-logos">
+        <div class="proof-logo">TechVentures</div>
+        <div class="proof-logo">GrowthCo</div>
+        <div class="proof-logo">Launchpad</div>
+        <div class="proof-logo">NovaCorp</div>
+        <div class="proof-logo">ScaleUp</div>
+        <div class="proof-logo">PixelForge</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────── AGENTS SECTION ───────── -->
+  <section class="agents-section" id="agents">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Meet the Team</span>
+        <h2 class="section-title">12 AI Experts, <span class="gradient-text">One Workforce</span></h2>
+        <p class="section-subtitle">Each agent is pre-trained in their specialty, connected to your business context, and ready to deliver results from day one.</p>
+      </div>
+
+      <div class="agents-grid">
+
+        <!-- Agent 1 — Aria -->
+        <div class="agent-card" data-color="#ec4899">
+          <div class="agent-glow" style="--glow: #ec489940"></div>
+          <div class="agent-header">
+            <div class="agent-avatar" style="background: linear-gradient(135deg,#8b5cf6,#ec4899)">
+              <span>✨</span>
+            </div>
+            <div class="agent-tag" style="background:#ec489920;color:#ec4899">Social Media</div>
+          </div>
+          <h3 class="agent-name">Aria</h3>
+          <p class="agent-role">AI Social Media Manager</p>
+          <p class="agent-desc">Crafts scroll-stopping content, schedules posts across all platforms, discovers trending topics, and grows your audience — without you lifting a finger.</p>
+          <div class="agent-skills">
+            <span>Content creation</span>
+            <span>Scheduling</span>
+            <span>Analytics</span>
+          </div>
+          <a href="#" class="agent-btn">Meet Aria →</a>
+        </div>
+
+        <!-- Agent 2 — Velo -->
+        <div class="agent-card" data-color="#f97316">
+          <div class="agent-glow" style="--glow: #f9731640"></div>
+          <div class="agent-header">
+            <div class="agent-avatar" style="background: linear-gradient(135deg,#f43f5e,#f97316)">
+              <span>🎯</span>
+            </div>
+            <div class="agent-tag" style="background:#f9731620;color:#fb923c">Sales</div>
+          </div>
+          <h3 class="agent-name">Velo</h3>
+          <p class="agent-role">AI Sales Manager</p>
+          <p class="agent-desc">Writes high-converting cold emails, crafts compelling pitch decks, handles follow-ups, and keeps your pipeline full so you can focus on closing.</p>
+          <div class="agent-skills">
+            <span>Cold outreach</span>
+            <span>Pitch writing</span>
+            <span>Lead nurturing</span>
+          </div>
+          <a href="#" class="agent-btn">Meet Velo →</a>
+        </div>
+
+        <!-- Agent 3 — Kira -->
+        <div class="agent-card" data-color="#14b8a6">
+          <div class="agent-glow" style="--glow: #14b8a640"></div>
+          <div class="agent-header">
+            <div class="agent-avatar" style="background: linear-gradient(135deg,#10b981,#06b6d4)">
+              <span>🛡️</span>
+            </div>
+            <div class="agent-tag" style="background:#06b6d420;color:#22d3ee">Support</div>
+          </div>
+          <h3 class="agent-name">Kira</h3>
+          <p class="agent-role">AI Customer Support Agent</p>
+          <p class="agent-desc">Responds to customer queries instantly, resolves tickets, writes product FAQs, and ensures your customers always feel heard and helped.</p>
+          <div class="agent-skills">
+            <span>Live chat</span>
+            <span>Ticket handling</span>
+            <span>FAQ builder</span>
+          </div>
+          <a href="#" class="agent-btn">Meet Kira →</a>
+        </div>
+
+        <!-- Agent 4 — Dex -->
+        <div class="agent-card" data-color="#6366f1">
+          <div class="agent-glow" style="--glow: #6366f140"></div>
+          <div class="agent-header">
+            <div class="agent-avatar" style="background: linear-gradient(135deg,#6366f1,#06b6d4)">
+              <span>📊</span>
+            </div>
+            <div class="agent-tag" style="background:#6366f120;color:#818cf8">Analytics</div>
+          </div>
+          <h3 class="agent-name">Dex</h3>
+          <p class="agent-role">AI Data Analyst</p>
+          <p class="agent-desc">Transforms raw data into actionable insights, builds reports, identifies patterns, and tells you exactly what to do next to grow faster.</p>
+          <div class="agent-skills">
+            <span>Reporting</span>
+            <span>Insights</span>
+            <span>Forecasting</span>
+          </div>
+          <a href="#" class="agent-btn">Meet Dex →</a>
+        </div>
+
+        <!-- Agent 5 — Luma -->
+        <div class="agent-card" data-color="#22c55e">
+          <div class="agent-glow" style="--glow: #22c55e40"></div>
+          <div class="agent-header">
+            <div class="agent-avatar" style="background: linear-gradient(135deg,#16a34a,#65a30d)">
+              <span>🔍</span>
+            </div>
+            <div class="agent-tag" style="background:#22c55e20;color:#4ade80">SEO</div>
+          </div>
+          <h3 class="agent-name">Luma</h3>
+          <p class="agent-role">AI SEO Specialist</p>
+          <p class="agent-desc">Researches high-value keywords, audits your site, optimizes content for ranking, and builds a search strategy that drives organic traffic consistently.</p>
+          <div class="agent-skills">
+            <span>Keyword research</span>
+            <span>On-page SEO</span>
+            <span>Audits</span>
+          </div>
+          <a href="#" class="agent-btn">Meet Luma →</a>
+        </div>
+
+        <!-- Agent 6 — Coda -->
+        <div class="agent-card" data-color="#eab308">
+          <div class="agent-glow" style="--glow: #eab30840"></div>
+          <div class="agent-header">
+            <div class="agent-avatar" style="background: linear-gradient(135deg,#d97706,#eab308)">
+              <span>✍️</span>
+            </div>
+            <div class="agent-tag" style="background:#eab30820;color:#facc15">Copywriting</div>
+          </div>
+          <h3 class="agent-name">Coda</h3>
+          <p class="agent-role">AI Copywriter</p>
+          <p class="agent-desc">Writes persuasive landing pages, ad copy, blog posts, product descriptions, and brand messaging that converts visitors into loyal customers.</p>
+          <div class="agent-skills">
+            <span>Ad copy</span>
+            <span>Blog writing</span>
+            <span>Landing pages</span>
+          </div>
+          <a href="#" class="agent-btn">Meet Coda →</a>
+        </div>
+
+        <!-- Agent 7 — Nexus -->
+        <div class="agent-card" data-color="#3b82f6">
+          <div class="agent-glow" style="--glow: #3b82f640"></div>
+          <div class="agent-header">
+            <div class="agent-avatar" style="background: linear-gradient(135deg,#1d4ed8,#6366f1)">
+              <span>🧠</span>
+            </div>
+            <div class="agent-tag" style="background:#3b82f620;color:#60a5fa">Strategy</div>
+          </div>
+          <h3 class="agent-name">Nexus</h3>
+          <p class="agent-role">AI Business Strategist</p>
+          <p class="agent-desc">Analyzes market trends, builds growth roadmaps, identifies opportunities, and acts as your always-on strategic advisor for every key decision.</p>
+          <div class="agent-skills">
+            <span>Market research</span>
+            <span>Roadmapping</span>
+            <span>Competitive intel</span>
+          </div>
+          <a href="#" class="agent-btn">Meet Nexus →</a>
+        </div>
+
+        <!-- Agent 8 — Scout -->
+        <div class="agent-card" data-color="#a855f7">
+          <div class="agent-glow" style="--glow: #a855f740"></div>
+          <div class="agent-header">
+            <div class="agent-avatar" style="background: linear-gradient(135deg,#7c3aed,#c026d3)">
+              <span>🎓</span>
+            </div>
+            <div class="agent-tag" style="background:#a855f720;color:#d8b4fe">Recruiting</div>
+          </div>
+          <h3 class="agent-name">Scout</h3>
+          <p class="agent-role">AI Talent Recruiter</p>
+          <p class="agent-desc">Writes compelling job postings, screens candidates, schedules interviews, and helps you build your dream team — faster than any HR department.</p>
+          <div class="agent-skills">
+            <span>Job postings</span>
+            <span>Screening</span>
+            <span>Interview prep</span>
+          </div>
+          <a href="#" class="agent-btn">Meet Scout →</a>
+        </div>
+
+        <!-- Agent 9 — Mailo -->
+        <div class="agent-card" data-color="#ef4444">
+          <div class="agent-glow" style="--glow: #ef444440"></div>
+          <div class="agent-header">
+            <div class="agent-avatar" style="background: linear-gradient(135deg,#dc2626,#f97316)">
+              <span>📧</span>
+            </div>
+            <div class="agent-tag" style="background:#ef444420;color:#f87171">Email</div>
+          </div>
+          <h3 class="agent-name">Mailo</h3>
+          <p class="agent-role">AI Email Marketer</p>
+          <p class="agent-desc">Designs email campaigns, writes nurture sequences, A/B tests subject lines, segments your list, and drives revenue with every send.</p>
+          <div class="agent-skills">
+            <span>Campaigns</span>
+            <span>Sequences</span>
+            <span>A/B testing</span>
+          </div>
+          <a href="#" class="agent-btn">Meet Mailo →</a>
+        </div>
+
+        <!-- Agent 10 — Zeno -->
+        <div class="agent-card" data-color="#0ea5e9">
+          <div class="agent-glow" style="--glow: #0ea5e940"></div>
+          <div class="agent-header">
+            <div class="agent-avatar" style="background: linear-gradient(135deg,#0284c7,#6366f1)">
+              <span>🛒</span>
+            </div>
+            <div class="agent-tag" style="background:#0ea5e920;color:#38bdf8">eCommerce</div>
+          </div>
+          <h3 class="agent-name">Zeno</h3>
+          <p class="agent-role">AI eCommerce Manager</p>
+          <p class="agent-desc">Optimizes product listings, manages promotions, monitors inventory signals, and helps you maximize conversions across every channel.</p>
+          <div class="agent-skills">
+            <span>Listings</span>
+            <span>Promotions</span>
+            <span>Conversion CRO</span>
+          </div>
+          <a href="#" class="agent-btn">Meet Zeno →</a>
+        </div>
+
+        <!-- Agent 11 — Flow -->
+        <div class="agent-card" data-color="#06b6d4">
+          <div class="agent-glow" style="--glow: #06b6d440"></div>
+          <div class="agent-header">
+            <div class="agent-avatar" style="background: linear-gradient(135deg,#0891b2,#818cf8)">
+              <span>⚡</span>
+            </div>
+            <div class="agent-tag" style="background:#06b6d420;color:#22d3ee">Assistant</div>
+          </div>
+          <h3 class="agent-name">Flow</h3>
+          <p class="agent-role">AI Virtual Assistant</p>
+          <p class="agent-desc">Manages your calendar, plans travel, drafts meeting notes, handles research tasks, and keeps your day running smoothly — without the back-and-forth.</p>
+          <div class="agent-skills">
+            <span>Scheduling</span>
+            <span>Research</span>
+            <span>Task management</span>
+          </div>
+          <a href="#" class="agent-btn">Meet Flow →</a>
+        </div>
+
+        <!-- Agent 12 — Bloom -->
+        <div class="agent-card" data-color="#84cc16">
+          <div class="agent-glow" style="--glow: #84cc1640"></div>
+          <div class="agent-header">
+            <div class="agent-avatar" style="background: linear-gradient(135deg,#65a30d,#16a34a)">
+              <span>🌱</span>
+            </div>
+            <div class="agent-tag" style="background:#84cc1620;color:#a3e635">Growth</div>
+          </div>
+          <h3 class="agent-name">Bloom</h3>
+          <p class="agent-role">AI Growth Coach</p>
+          <p class="agent-desc">Creates personalized learning paths, tracks progress, builds habits, and coaches your team toward peak performance — one insight at a time.</p>
+          <div class="agent-skills">
+            <span>Learning paths</span>
+            <span>Progress tracking</span>
+            <span>Team coaching</span>
+          </div>
+          <a href="#" class="agent-btn">Meet Bloom →</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────── FEATURES ───────── -->
+  <section class="features-section" id="features">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Why Mobilions AI</span>
+        <h2 class="section-title">Everything your team needs, <span class="gradient-text">nothing it doesn't</span></h2>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card feature-card--large">
+          <div class="feature-icon">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <rect width="32" height="32" rx="10" fill="url(#fGrad1)"/>
+              <path d="M10 16.5L14 20.5L22 12" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <defs><linearGradient id="fGrad1" x1="0" y1="0" x2="32" y2="32"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs>
+            </svg>
+          </div>
+          <h3>Brain AI — Your Business Memory</h3>
+          <p>Every agent learns your business. Upload your brand guidelines, SOPs, customer personas, and product docs. All 12 agents draw from the same shared knowledge base, so they always stay on-brand and in-context.</p>
+          <div class="feature-visual">
+            <div class="brain-nodes">
+              <div class="bnode" style="--x:50%;--y:10%;--c:#6366f1">📋</div>
+              <div class="bnode" style="--x:20%;--y:45%;--c:#a855f7">🗂️</div>
+              <div class="bnode" style="--x:80%;--y:45%;--c:#06b6d4">📌</div>
+              <div class="bnode" style="--x:35%;--y:80%;--c:#10b981">📄</div>
+              <div class="bnode" style="--x:65%;--y:80%;--c:#f97316">🔖</div>
+              <div class="brain-center">🧠</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <rect width="32" height="32" rx="10" fill="url(#fGrad2)"/>
+              <circle cx="16" cy="11" r="4" stroke="white" stroke-width="2"/>
+              <path d="M8 25c0-4.418 3.582-8 8-8s8 3.582 8 8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+              <defs><linearGradient id="fGrad2" x1="0" y1="0" x2="32" y2="32"><stop stop-color="#06b6d4"/><stop offset="1" stop-color="#6366f1"/></linearGradient></defs>
+            </svg>
+          </div>
+          <h3>Works Together, Not in Silos</h3>
+          <p>Your AI agents collaborate. Velo passes qualified leads to Mailo. Aria's content feeds Luma's SEO. Every agent amplifies the others.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <rect width="32" height="32" rx="10" fill="url(#fGrad3)"/>
+              <path d="M8 8h16v3H8zM8 14h10v3H8zM8 20h12v3H8z" fill="white"/>
+              <defs><linearGradient id="fGrad3" x1="0" y1="0" x2="32" y2="32"><stop stop-color="#f97316"/><stop offset="1" stop-color="#eab308"/></linearGradient></defs>
+            </svg>
+          </div>
+          <h3>100+ Power-Ups</h3>
+          <p>Connect your agents to Slack, HubSpot, Notion, Shopify, Google Analytics, and more. Your team lives where your work lives.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <rect width="32" height="32" rx="10" fill="url(#fGrad4)"/>
+              <path d="M16 6v4M16 22v4M6 16h4M22 16h4" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <circle cx="16" cy="16" r="5" stroke="white" stroke-width="2"/>
+              <defs><linearGradient id="fGrad4" x1="0" y1="0" x2="32" y2="32"><stop stop-color="#10b981"/><stop offset="1" stop-color="#06b6d4"/></linearGradient></defs>
+            </svg>
+          </div>
+          <h3>Always On, Always Instant</h3>
+          <p>No sick days, no time zones, no delays. Every agent delivers results 24/7/365 at the speed of thought — in 50+ languages.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <rect width="32" height="32" rx="10" fill="url(#fGrad5)"/>
+              <rect x="8" y="12" width="16" height="12" rx="2" stroke="white" stroke-width="2"/>
+              <path d="M12 12V10a4 4 0 0 1 8 0v2" stroke="white" stroke-width="2"/>
+              <circle cx="16" cy="18" r="2" fill="white"/>
+              <defs><linearGradient id="fGrad5" x1="0" y1="0" x2="32" y2="32"><stop stop-color="#a855f7"/><stop offset="1" stop-color="#ec4899"/></linearGradient></defs>
+            </svg>
+          </div>
+          <h3>Enterprise-Grade Privacy</h3>
+          <p>Your data never trains our models. End-to-end encryption, SOC 2 compliance, and granular access controls keep your business data yours.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────── HOW IT WORKS ───────── -->
+  <section class="how-section" id="how-it-works">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">How It Works</span>
+        <h2 class="section-title">Up and running in <span class="gradient-text">under 5 minutes</span></h2>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">01</div>
+          <div class="step-content">
+            <h3>Create your workspace</h3>
+            <p>Sign up, name your workspace, and tell us about your business in a 2-minute onboarding flow. That's it — no complex configuration.</p>
+          </div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <div class="step-content">
+            <h3>Feed the Brain</h3>
+            <p>Upload your brand docs, guidelines, and any context your agents need. The Brain AI ingests everything and shares it across your entire team.</p>
+          </div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <div class="step-content">
+            <h3>Activate your agents</h3>
+            <p>Pick which specialists you need. Each one is pre-configured and ready to work. Just give them a task and watch them deliver.</p>
+          </div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step">
+          <div class="step-num">04</div>
+          <div class="step-content">
+            <h3>Scale without limits</h3>
+            <p>As your business grows, your AI team scales effortlessly. Add integrations, expand your Brain, and let your agents handle more — every single day.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────── TESTIMONIALS ───────── -->
+  <section class="testimonials-section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Real Results</span>
+        <h2 class="section-title">What our customers <span class="gradient-text">are saying</span></h2>
+      </div>
+      <div class="testimonials-grid">
+        <div class="testimonial-card">
+          <div class="stars">★★★★★</div>
+          <p>"Mobilions AI replaced 4 separate tools I was paying for. Aria alone tripled our social engagement in 6 weeks. Absolute game changer."</p>
+          <div class="testimonial-author">
+            <div class="author-avatar" style="background:linear-gradient(135deg,#6366f1,#a855f7)">JK</div>
+            <div>
+              <strong>James Kowalski</strong>
+              <span>Founder, GrowthLoop</span>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <div class="stars">★★★★★</div>
+          <p>"We onboarded Velo and Mailo in one afternoon. Our sales team is closing 30% more deals because they're spending time selling, not writing emails."</p>
+          <div class="testimonial-author">
+            <div class="author-avatar" style="background:linear-gradient(135deg,#f97316,#eab308)">SR</div>
+            <div>
+              <strong>Sarah Reyes</strong>
+              <span>VP Sales, NovaTech</span>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <div class="stars">★★★★★</div>
+          <p>"Dex surfaces insights I would have missed completely. It's like having a senior analyst who never sleeps and never charges overtime."</p>
+          <div class="testimonial-author">
+            <div class="author-avatar" style="background:linear-gradient(135deg,#06b6d4,#10b981)">MP</div>
+            <div>
+              <strong>Maya Patel</strong>
+              <span>CEO, DataStream</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────── PRICING ───────── -->
+  <section class="pricing-section" id="pricing">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Pricing</span>
+        <h2 class="section-title">Simple pricing, <span class="gradient-text">extraordinary value</span></h2>
+        <p class="section-subtitle">Start free. Upgrade when you're ready. Cancel anytime.</p>
+      </div>
+
+      <div class="pricing-toggle">
+        <span class="toggle-label active" id="monthlyLabel">Monthly</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="billingToggle" />
+          <span class="toggle-track"></span>
+        </label>
+        <span class="toggle-label" id="annualLabel">Annual <span class="save-badge">Save 30%</span></span>
+      </div>
+
+      <div class="pricing-grid">
+
+        <div class="pricing-card">
+          <div class="plan-name">Starter</div>
+          <div class="plan-price">
+            <span class="currency">$</span>
+            <span class="amount" data-monthly="0" data-annual="0">0</span>
+            <span class="period">/mo</span>
+          </div>
+          <p class="plan-desc">Perfect for exploring what AI can do for your business.</p>
+          <ul class="plan-features">
+            <li><span class="check">✓</span> 3 AI Agents</li>
+            <li><span class="check">✓</span> Brain AI (100MB storage)</li>
+            <li><span class="check">✓</span> 50 tasks/month</li>
+            <li><span class="check">✓</span> 5 integrations</li>
+            <li><span class="check">✓</span> Community support</li>
+          </ul>
+          <a href="#" class="btn-outline plan-btn">Get Started Free</a>
+        </div>
+
+        <div class="pricing-card pricing-card--featured">
+          <div class="featured-badge">Most Popular</div>
+          <div class="plan-name">Pro</div>
+          <div class="plan-price">
+            <span class="currency">$</span>
+            <span class="amount" data-monthly="49" data-annual="34">49</span>
+            <span class="period">/mo</span>
+          </div>
+          <p class="plan-desc">For founders and solopreneurs who need a full AI team.</p>
+          <ul class="plan-features">
+            <li><span class="check">✓</span> All 12 AI Agents</li>
+            <li><span class="check">✓</span> Brain AI (5GB storage)</li>
+            <li><span class="check">✓</span> Unlimited tasks</li>
+            <li><span class="check">✓</span> 50+ integrations</li>
+            <li><span class="check">✓</span> Priority support</li>
+            <li><span class="check">✓</span> Custom agent personas</li>
+          </ul>
+          <a href="#" class="btn-primary plan-btn">Start 7-Day Free Trial</a>
+        </div>
+
+        <div class="pricing-card">
+          <div class="plan-name">Business</div>
+          <div class="plan-price">
+            <span class="currency">$</span>
+            <span class="amount" data-monthly="99" data-annual="69">99</span>
+            <span class="period">/mo</span>
+          </div>
+          <p class="plan-desc">For teams that need collaboration, workspaces, and advanced controls.</p>
+          <ul class="plan-features">
+            <li><span class="check">✓</span> Everything in Pro</li>
+            <li><span class="check">✓</span> 5 team seats</li>
+            <li><span class="check">✓</span> Multiple workspaces</li>
+            <li><span class="check">✓</span> 100+ integrations</li>
+            <li><span class="check">✓</span> Dedicated success manager</li>
+            <li><span class="check">✓</span> Custom AI training</li>
+          </ul>
+          <a href="#" class="btn-outline plan-btn">Start 7-Day Free Trial</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────── FINAL CTA ───────── -->
+  <section class="cta-section">
+    <div class="container">
+      <div class="cta-box">
+        <div class="cta-orb cta-orb-1"></div>
+        <div class="cta-orb cta-orb-2"></div>
+        <span class="section-tag">Get Started Today</span>
+        <h2>Your AI team is ready.<br /><span class="gradient-text">Are you?</span></h2>
+        <p>Join thousands of businesses growing faster with Mobilions AI. No credit card required. Cancel anytime.</p>
+        <div class="cta-buttons">
+          <a href="/signup" class="btn-primary btn-large">Hire Your AI Team — Free</a>
+          <a href="#agents" class="btn-ghost btn-large">Meet the Agents</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────── FOOTER ───────── -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <a href="#" class="nav-logo">
+            <span class="logo-icon">
+              <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
+                <circle cx="14" cy="14" r="14" fill="url(#footerLogoGrad)"/>
+                <path d="M8 19 L14 9 L20 19" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="14" cy="9" r="2" fill="white"/>
+                <defs>
+                  <linearGradient id="footerLogoGrad" x1="0" y1="0" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#6366f1"/><stop offset="1" stop-color="#a855f7"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </span>
+            <span class="logo-text">Mobilions<span class="logo-ai"> AI</span></span>
+          </a>
+          <p>Intelligent AI agents built for the modern business. Scale smarter, not harder.</p>
+          <div class="social-links">
+            <a href="#" aria-label="Twitter">𝕏</a>
+            <a href="#" aria-label="LinkedIn">in</a>
+            <a href="#" aria-label="YouTube">▶</a>
+          </div>
+        </div>
+
+        <div class="footer-cols">
+          <div class="footer-col">
+            <h4>Product</h4>
+            <ul>
+              <li><a href="#">AI Agents</a></li>
+              <li><a href="#">Brain AI</a></li>
+              <li><a href="#">Integrations</a></li>
+              <li><a href="#">Power-Ups</a></li>
+              <li><a href="#">Changelog</a></li>
+            </ul>
+          </div>
+          <div class="footer-col">
+            <h4>Agents</h4>
+            <ul>
+              <li><a href="#">Aria — Social</a></li>
+              <li><a href="#">Velo — Sales</a></li>
+              <li><a href="#">Kira — Support</a></li>
+              <li><a href="#">Dex — Analytics</a></li>
+              <li><a href="#">Luma — SEO</a></li>
+              <li><a href="#">View all 12 →</a></li>
+            </ul>
+          </div>
+          <div class="footer-col">
+            <h4>Company</h4>
+            <ul>
+              <li><a href="#">About Mobilions</a></li>
+              <li><a href="#">Blog</a></li>
+              <li><a href="#">Careers</a></li>
+              <li><a href="#">Press Kit</a></li>
+              <li><a href="#">Contact</a></li>
+            </ul>
+          </div>
+          <div class="footer-col">
+            <h4>Support</h4>
+            <ul>
+              <li><a href="#">Help Center</a></li>
+              <li><a href="#">API Docs</a></li>
+              <li><a href="#">Status</a></li>
+              <li><a href="#">Privacy Policy</a></li>
+              <li><a href="#">Terms of Service</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>© 2025 Mobilions. All rights reserved.</p>
+        <p>Built with ❤️ by the Mobilions team</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

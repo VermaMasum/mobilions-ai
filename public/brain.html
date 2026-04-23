@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Brain AI — Mobilions AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/app-styles.css" />
+  <link rel="stylesheet" href="/app-extended.css" />
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- Navbar -->
+  <nav class="app-nav">
+    <a href="/dashboard" class="app-nav-logo">
+      <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
+        <circle cx="14" cy="14" r="14" fill="url(#navLg3)"/>
+        <path d="M8 19L14 9L20 19" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="14" cy="9" r="2" fill="white"/>
+        <defs><linearGradient id="navLg3" x1="0" y1="0" x2="28" y2="28"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs>
+      </svg>
+      <span class="app-nav-logo-text">Mobilions<span class="app-nav-logo-ai"> AI</span></span>
+    </a>
+    <div class="app-nav-links">
+      <a href="/dashboard" class="nav-link">Agents</a>
+      <a href="/power-ups" class="nav-link">Power-Ups</a>
+      <a href="/brain" class="nav-link nav-link--active">Brain AI</a>
+      <a href="/integrations" class="nav-link">Integrations</a>
+    </div>
+    <div class="app-nav-right">
+      <div class="app-nav-user">
+        <div class="user-avatar" id="userAvatar">U</div>
+        <span class="user-name" id="userName">Loading…</span>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="logoutBtn">Log out</button>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <main class="dashboard-body">
+
+    <!-- Hero -->
+    <div class="brain-hero">
+      <div class="brain-hero-icon">🧠</div>
+      <div>
+        <h1>Brain AI</h1>
+        <p>Your business memory. Upload knowledge once — every AI agent automatically uses it in every conversation and power-up.</p>
+      </div>
+    </div>
+
+    <!-- How it works -->
+    <div class="brain-how">
+      <div class="brain-how-item">
+        <div class="brain-how-num">1</div>
+        <div>
+          <strong>Add your knowledge</strong>
+          <span>Paste your company info, tone guide, product details, FAQs, or any context your agents should know.</span>
+        </div>
+      </div>
+      <div class="brain-how-arrow">→</div>
+      <div class="brain-how-item">
+        <div class="brain-how-num">2</div>
+        <div>
+          <strong>Agents learn it</strong>
+          <span>Every AI agent automatically pulls your Brain AI context into every chat and power-up response.</span>
+        </div>
+      </div>
+      <div class="brain-how-arrow">→</div>
+      <div class="brain-how-item">
+        <div class="brain-how-num">3</div>
+        <div>
+          <strong>Better outputs</strong>
+          <span>Get responses tailored to your business — not generic AI. Your brand voice, your products, your specifics.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add knowledge form -->
+    <div class="brain-form-card">
+      <h2>Add Knowledge</h2>
+      <p class="brain-form-sub">Add anything your AI agents should know about your business.</p>
+
+      <div id="formError" class="form-error" style="display:none;margin-bottom:16px;"></div>
+
+      <div class="brain-form-row">
+        <div class="form-group" style="flex:1">
+          <label class="form-label">Title *</label>
+          <input type="text" id="entryTitle" class="form-input" placeholder="e.g. Brand Voice Guide, Product Features, Target Audience" />
+        </div>
+        <div class="form-group" style="width:160px">
+          <label class="form-label">Type</label>
+          <select id="entryType" class="form-input">
+            <option value="text">Text / Notes</option>
+            <option value="url">URL / Source</option>
+            <option value="brand">Brand Guide</option>
+            <option value="product">Product Info</option>
+            <option value="faq">FAQ</option>
+            <option value="audience">Target Audience</option>
+            <option value="policy">Policy</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Content *</label>
+        <textarea id="entryContent" class="form-input" rows="6" placeholder="Paste your content here — company description, product details, tone of voice, FAQs, URLs to reference, competitor info, anything your agents should know…"></textarea>
+        <div class="brain-content-hint" id="charCount">0 characters</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Source URL (optional)</label>
+        <input type="text" id="entrySource" class="form-input" placeholder="e.g. https://yoursite.com/about" />
+      </div>
+
+      <button class="btn btn-primary" id="addBtn" style="min-width:140px">
+        <span id="addBtnText">Add to Brain</span>
+        <div class="spinner" id="addSpinner" style="display:none"></div>
+      </button>
+    </div>
+
+    <!-- Entries list -->
+    <div class="brain-entries-section">
+      <div class="brain-entries-header">
+        <h2>Knowledge Base <span class="brain-count" id="entryCount">0 entries</span></h2>
+        <p>All agents use this context when generating responses.</p>
+      </div>
+
+      <div id="entriesList" class="brain-entries-list">
+        <div class="brain-empty" id="emptyState">
+          <div class="brain-empty-icon">🧠</div>
+          <h3>Your Brain AI is empty</h3>
+          <p>Add your first knowledge entry above and all AI agents will start using it immediately.</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script type="module">
+  import { requireAuth, getUser, clearSession, getInitials, apiFetch } from "/auth.js";
+  if (!requireAuth()) throw new Error("not authed");
+
+  const user = getUser();
+  document.getElementById("userName").textContent = user?.name || "User";
+  document.getElementById("userAvatar").textContent = getInitials(user?.name || "U");
+  document.getElementById("logoutBtn").addEventListener("click", () => {
+    clearSession(); window.location.href = "/login";
+  });
+
+  // ── Character count ──────────────────────────────────────────────────────
+  const contentEl = document.getElementById("entryContent");
+  contentEl.addEventListener("input", () => {
+    const len = contentEl.value.length;
+    document.getElementById("charCount").textContent = `${len.toLocaleString()} characters`;
+  });
+
+  // ── Load entries ─────────────────────────────────────────────────────────
+  let entries = [];
+
+  async function loadEntries() {
+    const res = await apiFetch("/api/brain");
+    if (!res) return;
+    const data = await res.json();
+    entries = data.entries || [];
+    renderEntries();
+  }
+
+  function renderEntries() {
+    const list  = document.getElementById("entriesList");
+    const empty = document.getElementById("emptyState");
+    const count = document.getElementById("entryCount");
+
+    count.textContent = `${entries.length} ${entries.length === 1 ? "entry" : "entries"}`;
+
+    if (!entries.length) {
+      list.innerHTML = `<div class="brain-empty" id="emptyState">
+        <div class="brain-empty-icon">🧠</div>
+        <h3>Your Brain AI is empty</h3>
+        <p>Add your first knowledge entry above and all AI agents will start using it immediately.</p>
+      </div>`;
+      return;
+    }
+
+    const typeEmojis = { text: "📝", url: "🔗", brand: "🎨", product: "📦", faq: "❓", audience: "👥", policy: "📋" };
+
+    list.innerHTML = entries.map(e => {
+      const preview = e.content.length > 200 ? e.content.slice(0, 200) + "…" : e.content;
+      const date    = new Date(e.createdAt).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
+      const emoji   = typeEmojis[e.type] || "📝";
+      return `
+        <div class="brain-entry-card" data-id="${e.id}">
+          <div class="brain-entry-header">
+            <div class="brain-entry-title-row">
+              <span class="brain-type-badge">${emoji} ${e.type}</span>
+              <span class="brain-entry-date">${date}</span>
+            </div>
+            <div class="brain-entry-title">${escHtml(e.title)}</div>
+          </div>
+          <div class="brain-entry-content">${escHtml(preview)}</div>
+          ${e.source ? `<div class="brain-entry-source">🔗 ${escHtml(e.source)}</div>` : ""}
+          <div class="brain-entry-footer">
+            <span class="brain-entry-chars">${e.content.length.toLocaleString()} chars</span>
+            <button class="brain-delete-btn btn btn-danger btn-sm" data-id="${e.id}">Delete</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    list.querySelectorAll(".brain-delete-btn").forEach(btn => {
+      btn.addEventListener("click", () => deleteEntry(btn.dataset.id));
+    });
+  }
+
+  function escHtml(str) {
+    return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+
+  // ── Add entry ─────────────────────────────────────────────────────────────
+  document.getElementById("addBtn").addEventListener("click", async () => {
+    const title   = document.getElementById("entryTitle").value.trim();
+    const content = document.getElementById("entryContent").value.trim();
+    const type    = document.getElementById("entryType").value;
+    const source  = document.getElementById("entrySource").value.trim();
+    const errEl   = document.getElementById("formError");
+
+    errEl.style.display = "none";
+
+    if (!title) { showError("Please enter a title."); document.getElementById("entryTitle").focus(); return; }
+    if (!content) { showError("Please enter some content."); contentEl.focus(); return; }
+
+    const btn     = document.getElementById("addBtn");
+    const btnText = document.getElementById("addBtnText");
+    const spinner = document.getElementById("addSpinner");
+
+    btn.disabled = true;
+    btnText.textContent = "Adding…";
+    spinner.style.display = "";
+
+    try {
+      const res = await apiFetch("/api/brain", {
+        method: "POST",
+        body: JSON.stringify({ title, content, type, source }),
+      });
+      if (!res) return;
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        showError(err.error || "Failed to add entry. Please try again.");
+        return;
+      }
+
+      // Clear form
+      document.getElementById("entryTitle").value   = "";
+      document.getElementById("entryContent").value = "";
+      document.getElementById("entrySource").value  = "";
+      document.getElementById("charCount").textContent = "0 characters";
+
+      await loadEntries();
+    } finally {
+      btn.disabled = false;
+      btnText.textContent = "Add to Brain";
+      spinner.style.display = "none";
+    }
+  });
+
+  function showError(msg) {
+    const el = document.getElementById("formError");
+    el.textContent = msg;
+    el.style.display = "block";
+  }
+
+  // ── Delete entry ──────────────────────────────────────────────────────────
+  async function deleteEntry(id) {
+    if (!confirm("Delete this knowledge entry? This cannot be undone.")) return;
+    const res = await apiFetch(`/api/brain/${id}`, { method: "DELETE" });
+    if (!res) return;
+    await loadEntries();
+  }
+
+  await loadEntries();
+</script>
+</body>
+</html>

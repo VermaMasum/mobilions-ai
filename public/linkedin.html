@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>LinkedIn — Mobilions AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/app-styles.css" />
+  <link rel="stylesheet" href="/app-extended.css" />
+  <style>
+    .li-layout { display:flex; height:100vh; overflow:hidden; }
+
+    /* Sidebar */
+    .li-sidebar {
+      width:280px; flex-shrink:0; display:flex; flex-direction:column;
+      background:var(--bg-1); border-right:1px solid var(--border); overflow-y:auto;
+    }
+
+    /* Profile card */
+    .li-profile-card {
+      padding:24px 20px; border-bottom:1px solid var(--border);
+      display:flex; flex-direction:column; align-items:center; text-align:center;
+    }
+    .li-avatar {
+      width:72px; height:72px; border-radius:50%;
+      background:linear-gradient(135deg,#0077b5,#00a0dc);
+      display:flex; align-items:center; justify-content:center;
+      font-size:26px; font-weight:800; color:#fff; margin-bottom:12px;
+      border:3px solid rgba(0,119,181,.3);
+    }
+    .li-profile-name { font-size:16px; font-weight:700; color:var(--text-1); margin-bottom:4px; }
+    .li-profile-headline { font-size:12px; color:var(--text-3); line-height:1.5; margin-bottom:12px; }
+    .li-profile-stats { display:flex; gap:0; width:100%; }
+    .li-stat { flex:1; padding:10px 4px; text-align:center; border:1px solid var(--border); }
+    .li-stat:first-child { border-radius:8px 0 0 8px; }
+    .li-stat:last-child  { border-radius:0 8px 8px 0; }
+    .li-stat-val { font-size:15px; font-weight:800; color:var(--text-1); }
+    .li-stat-lbl { font-size:10px; color:var(--text-3); margin-top:2px; }
+
+    /* Analytics */
+    .li-analytics { padding:16px 20px; border-bottom:1px solid var(--border); }
+    .li-section-title { font-size:11px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:.05em; margin-bottom:10px; }
+    .li-ana-row { display:flex; justify-content:space-between; align-items:center; padding:6px 0; }
+    .li-ana-label { font-size:12px; color:var(--text-2); }
+    .li-ana-value { font-size:13px; font-weight:700; color:var(--accent); }
+
+    /* Actions */
+    .li-actions { padding:16px 20px; }
+    .li-action-btn {
+      width:100%; padding:9px; border-radius:8px; font-size:13px; font-weight:600;
+      cursor:pointer; margin-bottom:8px; display:flex; align-items:center; gap:8px;
+      background:var(--bg-2); border:1px solid var(--border); color:var(--text-1);
+      transition:background var(--tr);
+    }
+    .li-action-btn:hover { background:rgba(99,102,241,.1); border-color:rgba(99,102,241,.3); }
+    .li-action-btn.primary { background:linear-gradient(135deg,#0077b5,#00a0dc); border:none; color:#fff; }
+    .li-action-btn.primary:hover { opacity:.9; }
+
+    /* Main */
+    .li-main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+    .li-topbar {
+      display:flex; align-items:center; gap:14px; padding:14px 20px;
+      border-bottom:1px solid var(--border);
+      background:rgba(4,4,15,.85); backdrop-filter:blur(20px);
+    }
+    .li-topbar h1 { font-size:17px; font-weight:700; }
+    .li-topbar-right { margin-left:auto; display:flex; gap:8px; }
+
+    /* Feed tabs */
+    .li-tabs {
+      display:flex; border-bottom:1px solid var(--border);
+      background:var(--bg-0);
+    }
+    .li-tab {
+      padding:12px 20px; font-size:13px; font-weight:600; cursor:pointer;
+      color:var(--text-3); border-bottom:2px solid transparent; transition:all .15s;
+    }
+    .li-tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+
+    /* Feed */
+    .li-feed { flex:1; overflow-y:auto; padding:20px 24px; display:flex; flex-direction:column; gap:16px; }
+
+    /* Post card */
+    .li-post {
+      background:var(--bg-1); border:1px solid var(--border); border-radius:14px;
+      overflow:hidden; transition:border-color .15s;
+    }
+    .li-post:hover { border-color:rgba(99,102,241,.3); }
+    .li-post-header { display:flex; align-items:center; gap:12px; padding:16px 18px 12px; }
+    .li-post-avatar {
+      width:44px; height:44px; border-radius:50%; flex-shrink:0;
+      background:linear-gradient(135deg,#0077b5,#00a0dc);
+      display:flex; align-items:center; justify-content:center;
+      font-size:16px; font-weight:800; color:#fff;
+    }
+    .li-post-meta { flex:1; min-width:0; }
+    .li-post-name { font-size:14px; font-weight:700; color:var(--text-1); }
+    .li-post-sub  { font-size:12px; color:var(--text-3); margin-top:1px; }
+    .li-post-date { font-size:11px; color:var(--text-3); flex-shrink:0; }
+    .li-post-body { padding:0 18px 14px; font-size:13px; color:var(--text-2); line-height:1.7; white-space:pre-wrap; word-break:break-word; }
+    .li-post-body.collapsed { max-height:120px; overflow:hidden; position:relative; }
+    .li-post-body.collapsed::after {
+      content:""; position:absolute; bottom:0; left:0; right:0; height:40px;
+      background:linear-gradient(transparent, var(--bg-1));
+    }
+    .li-post-see-more { padding:0 18px 10px; }
+    .li-see-more-btn { font-size:12px; color:var(--accent); cursor:pointer; font-weight:600; }
+    .li-post-stats {
+      display:flex; gap:20px; padding:10px 18px; border-top:1px solid var(--border);
+      font-size:12px; color:var(--text-3);
+    }
+    .li-post-stat { display:flex; align-items:center; gap:5px; }
+    .li-post-actions {
+      display:flex; border-top:1px solid var(--border);
+    }
+    .li-post-action-btn {
+      flex:1; padding:10px; display:flex; align-items:center; justify-content:center;
+      gap:6px; font-size:12px; font-weight:600; color:var(--text-3); cursor:pointer;
+      transition:background .15s; border:none; background:none;
+    }
+    .li-post-action-btn:hover { background:rgba(255,255,255,.05); color:var(--text-1); }
+
+    /* New post box */
+    .li-new-post {
+      background:var(--bg-1); border:1px solid var(--border); border-radius:14px;
+      padding:16px 18px;
+    }
+    .li-new-post-input {
+      width:100%; background:var(--bg-2); border:1px solid var(--border);
+      border-radius:10px; padding:12px 14px; color:var(--text-1); font-size:13px;
+      outline:none; font-family:inherit; resize:none; min-height:80px; line-height:1.6;
+    }
+    .li-new-post-input:focus { border-color:rgba(99,102,241,.4); }
+    .li-new-post-footer { display:flex; justify-content:flex-end; gap:8px; margin-top:10px; }
+
+    /* New post indicator */
+    .li-post.is-new { border-color:rgba(99,102,241,.5); animation:fadeIn .4s ease; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:none; } }
+
+    /* AI panel */
+    .li-ai-panel {
+      border-top:1px solid var(--border); background:var(--bg-1);
+      display:flex; flex-direction:column; max-height:300px;
+    }
+    .li-ai-header {
+      display:flex; align-items:center; gap:10px; padding:11px 16px;
+      border-bottom:1px solid var(--border); font-size:13px; font-weight:600;
+    }
+    .li-ai-messages { flex:1; overflow-y:auto; padding:12px 16px; min-height:60px; max-height:150px; }
+    .li-ai-msg { font-size:13px; line-height:1.6; margin-bottom:8px; }
+    .li-ai-msg.user-msg { color:var(--text-2); }
+    .li-ai-msg.ai-msg   { color:var(--text-1); white-space:pre-wrap; }
+    .li-ai-input-row { display:flex; gap:8px; padding:10px 16px; border-top:1px solid var(--border); }
+    .li-ai-input {
+      flex:1; background:var(--bg-2); border:1px solid var(--border);
+      border-radius:8px; padding:8px 12px; color:var(--text-1); font-size:13px;
+      outline:none; font-family:inherit;
+    }
+    .li-ai-input:focus { border-color:rgba(99,102,241,.45); }
+    .ai-quick-btns { display:flex; gap:6px; padding:8px 16px 0; flex-wrap:wrap; }
+    .ai-quick-btn {
+      font-size:11px; padding:4px 10px; border-radius:20px;
+      background:rgba(99,102,241,.12); border:1px solid rgba(99,102,241,.25);
+      color:#a5b4fc; cursor:pointer; transition:background .15s;
+    }
+    .ai-quick-btn:hover { background:rgba(99,102,241,.25); }
+
+    /* Use in post button */
+    .use-in-post-btn {
+      margin-top:8px; font-size:12px; padding:5px 12px;
+      background:rgba(0,119,181,.15); border:1px solid rgba(0,119,181,.3);
+      color:#60a5fa; border-radius:6px; cursor:pointer;
+    }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+
+  <nav class="app-nav">
+    <a href="/dashboard" class="app-nav-logo">
+      <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
+        <circle cx="14" cy="14" r="14" fill="url(#navLgL)"/>
+        <path d="M8 19L14 9L20 19" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="14" cy="9" r="2" fill="white"/>
+        <defs><linearGradient id="navLgL" x1="0" y1="0" x2="28" y2="28"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs>
+      </svg>
+      <span class="app-nav-logo-text">Mobilions<span class="app-nav-logo-ai"> AI</span></span>
+    </a>
+    <div class="app-nav-links">
+      <a href="/dashboard" class="nav-link">Agents</a>
+      <a href="/power-ups" class="nav-link">Power-Ups</a>
+      <a href="/brain" class="nav-link">Brain AI</a>
+      <a href="/integrations" class="nav-link nav-link--active">Integrations</a>
+    </div>
+    <div class="app-nav-right">
+      <div class="user-avatar" id="userAvatar">U</div>
+      <button class="btn btn-ghost btn-sm" id="logoutBtn">Log out</button>
+    </div>
+  </nav>
+
+  <div style="flex:1;display:flex;overflow:hidden;">
+  <div class="li-layout" style="flex:1;">
+
+    <!-- Sidebar -->
+    <aside class="li-sidebar">
+
+      <!-- Profile -->
+      <div class="li-profile-card" id="profileCard">
+        <div style="padding:20px;color:var(--text-3);font-size:13px;">Loading…</div>
+      </div>
+
+      <!-- Analytics -->
+      <div class="li-analytics" id="analyticsCard" style="display:none;">
+        <div class="li-section-title">Your Analytics</div>
+        <div id="analyticsRows"></div>
+      </div>
+
+      <!-- Quick actions -->
+      <div class="li-actions">
+        <div class="li-section-title">Quick Actions</div>
+        <button class="li-action-btn primary" id="writePostBtn">✍️ Write a Post</button>
+        <button class="li-action-btn" id="aiStrategyBtn">💡 Content Strategy</button>
+        <button class="li-action-btn" id="aiEngageBtn">📈 Boost Engagement</button>
+        <button class="li-action-btn" id="aiOutreachBtn">🤝 Outreach Message</button>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="li-main">
+      <div class="li-topbar">
+        <h1>💼 LinkedIn</h1>
+        <div class="li-topbar-right">
+          <button class="btn btn-ghost btn-sm" id="toggleAiBtn">🤖 Ask AI</button>
+        </div>
+      </div>
+
+      <div class="li-tabs">
+        <div class="li-tab active" data-tab="feed">My Posts</div>
+        <div class="li-tab" data-tab="compose">Compose</div>
+      </div>
+
+      <!-- Feed -->
+      <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;">
+        <div class="li-feed" id="liFeed">
+          <div style="color:var(--text-3);font-size:13px;text-align:center;padding:40px;">Loading posts…</div>
+        </div>
+
+        <!-- AI panel -->
+        <div class="li-ai-panel" id="aiPanel" style="display:none;">
+          <div class="li-ai-header">
+            <span>🤖</span> Aria — AI LinkedIn Assistant
+            <button class="btn btn-ghost btn-sm" id="closeAiPanel" style="margin-left:auto;">✕</button>
+          </div>
+          <div class="ai-quick-btns">
+            <button class="ai-quick-btn" data-q="Analyze my recent posts and tell me what's working">Post analysis</button>
+            <button class="ai-quick-btn" data-q="Write a thought leadership post about AI in product management">Write a post</button>
+            <button class="ai-quick-btn" data-q="Give me 5 LinkedIn post ideas for this week">Post ideas</button>
+            <button class="ai-quick-btn" data-q="How can I grow my LinkedIn following faster?">Grow audience</button>
+          </div>
+          <div class="li-ai-messages" id="aiMessages"></div>
+          <div class="li-ai-input-row">
+            <input class="li-ai-input" id="aiInput" placeholder="Ask about your LinkedIn strategy, posts, or say 'Write a post about…'" />
+            <button class="btn btn-primary btn-sm" id="aiSendBtn">Send</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  </div>
+</div>
+
+<script type="module">
+  import { requireAuth, getUser, getToken, clearSession, getInitials, apiFetch } from "/auth.js";
+  if (!requireAuth()) throw new Error("not authed");
+
+  const user = getUser();
+  document.getElementById("userAvatar").textContent = getInitials(user?.name || "U");
+  document.getElementById("logoutBtn").addEventListener("click", () => { clearSession(); window.location.href = "/login"; });
+
+  let allPosts   = [];
+  let activeTab  = "feed";
+  let lastAiText = "";
+
+  // ── Load profile + posts ───────────────────────────────────────────────────
+  async function loadAll() {
+    const [profileRes, postsRes] = await Promise.all([
+      apiFetch("/api/integrations/linkedin/profile"),
+      apiFetch("/api/integrations/linkedin/posts"),
+    ]);
+
+    if (!profileRes?.ok) {
+      document.getElementById("profileCard").innerHTML = `
+        <div style="text-align:center;padding:20px;">
+          <div style="font-size:32px;margin-bottom:12px;">💼</div>
+          <div style="font-size:13px;color:var(--text-2);margin-bottom:14px;">LinkedIn not connected.</div>
+          <a href="/integrations" class="btn btn-primary btn-sm" style="display:inline-flex;">Connect LinkedIn</a>
+        </div>`;
+      return;
+    }
+
+    const { profile, analytics } = await profileRes.json();
+    const { posts } = await postsRes.json();
+    allPosts = posts || [];
+
+    renderProfile(profile);
+    renderAnalytics(analytics);
+    renderFeed(allPosts);
+  }
+
+  function renderProfile(p) {
+    document.getElementById("profileCard").innerHTML = `
+      <div class="li-avatar">${p.avatar}</div>
+      <div class="li-profile-name">${escHtml(p.name)}</div>
+      <div class="li-profile-headline">${escHtml(p.headline)}</div>
+      <div class="li-profile-stats">
+        <div class="li-stat">
+          <div class="li-stat-val">${(p.connections).toLocaleString()}</div>
+          <div class="li-stat-lbl">Connections</div>
+        </div>
+        <div class="li-stat">
+          <div class="li-stat-val">${(p.followers).toLocaleString()}</div>
+          <div class="li-stat-lbl">Followers</div>
+        </div>
+      </div>`;
+  }
+
+  function renderAnalytics(a) {
+    const card = document.getElementById("analyticsCard");
+    card.style.display = "";
+    document.getElementById("analyticsRows").innerHTML = [
+      ["Profile Views (90d)", a.profileViews.toLocaleString()],
+      ["Search Appearances", a.searchAppearances.toLocaleString()],
+      ["Post Impressions", a.postImpressions.toLocaleString()],
+      ["Follower Growth", a.followerGrowth],
+    ].map(([lbl, val]) => `
+      <div class="li-ana-row">
+        <span class="li-ana-label">${lbl}</span>
+        <span class="li-ana-value">${val}</span>
+      </div>`).join("");
+  }
+
+  // ── Feed ───────────────────────────────────────────────────────────────────
+  function renderFeed(posts) {
+    const feed = document.getElementById("liFeed");
+    if (!posts.length) {
+      feed.innerHTML = `<div style="color:var(--text-3);font-size:13px;text-align:center;padding:40px;">No posts yet.</div>`;
+      return;
+    }
+    feed.innerHTML = posts.map(p => postCard(p)).join("");
+    feed.querySelectorAll(".li-see-more-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const body = btn.closest(".li-post").querySelector(".li-post-body");
+        body.classList.remove("collapsed");
+        btn.closest(".li-post-see-more").style.display = "none";
+      });
+    });
+  }
+
+  function postCard(p) {
+    const date = new Date(p.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    const long = p.text.length > 250;
+    const newClass = p.isNew ? " is-new" : "";
+    return `
+      <div class="li-post${newClass}">
+        <div class="li-post-header">
+          <div class="li-post-avatar">AJ</div>
+          <div class="li-post-meta">
+            <div class="li-post-name">Alex Johnson</div>
+            <div class="li-post-sub">Senior Product Manager at TechCorp</div>
+          </div>
+          <div class="li-post-date">${p.isNew ? "Just now" : date}</div>
+        </div>
+        <div class="li-post-body${long ? " collapsed" : ""}">${escHtml(p.text)}</div>
+        ${long ? `<div class="li-post-see-more"><span class="li-see-more-btn">…see more</span></div>` : ""}
+        ${!p.isNew ? `
+        <div class="li-post-stats">
+          <span class="li-post-stat">👍 ${p.likes.toLocaleString()}</span>
+          <span class="li-post-stat">💬 ${p.comments} comments</span>
+          <span class="li-post-stat">↗️ ${p.shares} shares</span>
+          <span style="margin-left:auto;">👁 ${p.impressions.toLocaleString()} impressions</span>
+        </div>` : `
+        <div class="li-post-stats">
+          <span style="color:#4ade80;font-weight:600;font-size:12px;">✓ Post published successfully!</span>
+        </div>`}
+        <div class="li-post-actions">
+          <button class="li-post-action-btn">👍 Like</button>
+          <button class="li-post-action-btn">💬 Comment</button>
+          <button class="li-post-action-btn">↗️ Share</button>
+        </div>
+      </div>`;
+  }
+
+  // ── Tabs ───────────────────────────────────────────────────────────────────
+  document.querySelectorAll(".li-tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+      activeTab = tab.dataset.tab;
+      document.querySelectorAll(".li-tab").forEach(t => t.classList.toggle("active", t.dataset.tab === activeTab));
+      if (activeTab === "feed") {
+        renderFeed(allPosts);
+      } else {
+        showCompose();
+      }
+    });
+  });
+
+  function showCompose() {
+    document.getElementById("liFeed").innerHTML = `
+      <div class="li-new-post">
+        <div style="font-size:15px;font-weight:700;margin-bottom:14px;">✍️ Create a Post</div>
+        <textarea class="li-new-post-input" id="composeText" placeholder="What do you want to share? (or use AI below to draft it)">${lastAiText ? lastAiText : ""}</textarea>
+        <div class="li-new-post-footer">
+          <button class="btn btn-outline btn-sm" id="aiDraftBtn">🤖 AI Draft</button>
+          <button class="btn btn-primary btn-sm" id="publishBtn">Publish Post</button>
+        </div>
+        <div id="publishResult" style="margin-top:10px;font-size:13px;display:none;"></div>
+      </div>`;
+
+    document.getElementById("aiDraftBtn").addEventListener("click", () => {
+      document.getElementById("aiInput").value = "Write a compelling LinkedIn post I can publish today about AI in product management";
+      showAiPanel(); askAI();
+    });
+
+    document.getElementById("publishBtn").addEventListener("click", publishPost);
+  }
+
+  async function publishPost() {
+    const text = document.getElementById("composeText")?.value.trim();
+    if (!text) { alert("Write something first!"); return; }
+
+    const btn = document.getElementById("publishBtn");
+    btn.textContent = "Publishing…"; btn.disabled = true;
+
+    const res = await apiFetch("/api/integrations/linkedin/post", {
+      method: "POST",
+      body: JSON.stringify({ text }),
+    });
+
+    btn.textContent = "Publish Post"; btn.disabled = false;
+
+    if (res?.ok) {
+      const { post } = await res.json();
+      allPosts.unshift(post);
+      lastAiText = "";
+      // Switch to feed to show the new post
+      activeTab = "feed";
+      document.querySelectorAll(".li-tab").forEach(t => t.classList.toggle("active", t.dataset.tab === "feed"));
+      renderFeed(allPosts);
+    } else {
+      const result = document.getElementById("publishResult");
+      result.style.display = "block";
+      result.style.color = "#f87171";
+      result.textContent = "Failed to publish. Try again.";
+    }
+  }
+
+  // ── Quick action buttons ───────────────────────────────────────────────────
+  document.getElementById("writePostBtn").addEventListener("click", () => {
+    activeTab = "compose"; lastAiText = "";
+    document.querySelectorAll(".li-tab").forEach(t => t.classList.toggle("active", t.dataset.tab === "compose"));
+    showCompose();
+  });
+
+  document.getElementById("aiStrategyBtn").addEventListener("click", () => {
+    document.getElementById("aiInput").value = "Create a 2-week LinkedIn content strategy for a product manager to grow their audience";
+    showAiPanel(); askAI();
+  });
+
+  document.getElementById("aiEngageBtn").addEventListener("click", () => {
+    document.getElementById("aiInput").value = "Analyze my recent posts and give me specific tips to boost engagement";
+    showAiPanel(); askAI();
+  });
+
+  document.getElementById("aiOutreachBtn").addEventListener("click", () => {
+    document.getElementById("aiInput").value = "Write a short, personalized LinkedIn connection request message for a startup founder in AI";
+    showAiPanel(); askAI();
+  });
+
+  // ── AI panel ───────────────────────────────────────────────────────────────
+  document.getElementById("toggleAiBtn").addEventListener("click", () => {
+    const panel = document.getElementById("aiPanel");
+    panel.style.display = panel.style.display === "none" ? "flex" : "none";
+    if (panel.style.display === "flex") panel.style.flexDirection = "column";
+  });
+  document.getElementById("closeAiPanel").addEventListener("click", () => {
+    document.getElementById("aiPanel").style.display = "none";
+  });
+  document.getElementById("aiSendBtn").addEventListener("click", askAI);
+  document.getElementById("aiInput").addEventListener("keydown", e => { if (e.key === "Enter") askAI(); });
+  document.querySelectorAll(".ai-quick-btn").forEach(btn => {
+    btn.addEventListener("click", () => { document.getElementById("aiInput").value = btn.dataset.q; showAiPanel(); askAI(); });
+  });
+
+  function showAiPanel() {
+    const panel = document.getElementById("aiPanel");
+    panel.style.display = "flex"; panel.style.flexDirection = "column";
+  }
+
+  async function askAI() {
+    const input = document.getElementById("aiInput");
+    const msg   = input.value.trim();
+    if (!msg) return;
+    input.value = "";
+    showAiPanel();
+
+    const messagesEl = document.getElementById("aiMessages");
+    messagesEl.innerHTML += `<div class="li-ai-msg user-msg">You: ${escHtml(msg)}</div>`;
+    const aiMsgEl = document.createElement("div");
+    aiMsgEl.className = "li-ai-msg ai-msg";
+    aiMsgEl.textContent = "🤖 ";
+    messagesEl.appendChild(aiMsgEl);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+
+    const res = await fetch("/api/integrations/linkedin/ask", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${getToken()}` },
+      body: JSON.stringify({ message: msg }),
+    });
+
+    if (!res.ok) { aiMsgEl.textContent = "🤖 Error: could not get response."; return; }
+
+    const reader  = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = ""; let content = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n"); buffer = lines.pop() ?? "";
+      for (const line of lines) {
+        if (!line.startsWith("data: ")) continue;
+        const data = line.slice(6).trim();
+        if (data === "[DONE]") break;
+        try {
+          const d = JSON.parse(data);
+          if (d.delta) { content += d.delta; aiMsgEl.textContent = "🤖 " + content; messagesEl.scrollTop = messagesEl.scrollHeight; }
+        } catch {}
+      }
+    }
+
+    // If it looks like a post draft, offer to use it
+    const isPostDraft = msg.toLowerCase().includes("write") || msg.toLowerCase().includes("draft") || msg.toLowerCase().includes("post");
+    if (content && isPostDraft) {
+      const useBtn = document.createElement("button");
+      useBtn.className = "use-in-post-btn";
+      useBtn.textContent = "↑ Use this in Compose";
+      useBtn.addEventListener("click", () => {
+        lastAiText = content.replace(/^🤖\s*/, "");
+        activeTab = "compose";
+        document.querySelectorAll(".li-tab").forEach(t => t.classList.toggle("active", t.dataset.tab === "compose"));
+        showCompose();
+      });
+      messagesEl.appendChild(useBtn);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+  }
+
+  function escHtml(s) {
+    return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+
+  loadAll();
+</script>
+</body>
+</html>

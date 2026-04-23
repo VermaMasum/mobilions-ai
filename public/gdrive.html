@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Google Drive — Mobilions AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/app-styles.css" />
+  <link rel="stylesheet" href="/app-extended.css" />
+  <style>
+    .gdrive-layout { display:flex; height:100vh; overflow:hidden; }
+
+    /* Sidebar */
+    .gdrive-sidebar {
+      width:300px; flex-shrink:0; display:flex; flex-direction:column;
+      background:var(--bg-1); border-right:1px solid var(--border); overflow:hidden;
+    }
+    .gdrive-sidebar-header { padding:16px 18px; border-bottom:1px solid var(--border); }
+    .gdrive-sidebar-header h2 { font-size:16px; font-weight:700; margin-bottom:4px; }
+    .gdrive-connected-email { font-size:12px; color:var(--text-3); }
+    .gdrive-search {
+      padding:10px 12px; border-bottom:1px solid var(--border);
+      display:flex; gap:8px;
+    }
+    .gdrive-search-input {
+      flex:1; background:var(--bg-2); border:1px solid var(--border);
+      border-radius:8px; padding:7px 10px; color:var(--text-1); font-size:12px;
+      outline:none; font-family:inherit;
+    }
+    .gdrive-search-input:focus { border-color:rgba(99,102,241,.45); }
+    .file-list { flex:1; overflow-y:auto; }
+    .file-item {
+      padding:11px 16px; border-bottom:1px solid var(--border);
+      cursor:pointer; transition:background var(--tr);
+    }
+    .file-item:hover { background:rgba(255,255,255,.04); }
+    .file-item.active { background:rgba(99,102,241,.1); border-left:3px solid var(--accent); }
+    .file-item-row { display:flex; align-items:center; gap:9px; }
+    .file-icon { font-size:18px; flex-shrink:0; }
+    .file-item-info { min-width:0; }
+    .file-item-name { font-size:13px; font-weight:600; color:var(--text-1);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .file-item-meta { font-size:11px; color:var(--text-3); margin-top:2px; }
+
+    /* Main */
+    .gdrive-main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+    .gdrive-topbar {
+      display:flex; align-items:center; gap:14px; padding:14px 20px;
+      border-bottom:1px solid var(--border);
+      background:rgba(4,4,15,.85); backdrop-filter:blur(20px);
+    }
+    .gdrive-topbar h1 { font-size:18px; font-weight:700; }
+    .gdrive-topbar-right { margin-left:auto; display:flex; gap:8px; }
+    .gdrive-content { flex:1; overflow:hidden; display:flex; flex-direction:column; }
+
+    /* File detail */
+    .file-detail { flex:1; overflow-y:auto; padding:28px 32px; display:none; flex-direction:column; }
+    .file-detail.visible { display:flex; }
+    .file-detail-icon { font-size:52px; margin-bottom:16px; }
+    .file-detail-name { font-size:22px; font-weight:800; letter-spacing:-.02em; margin-bottom:16px; word-break:break-word; }
+    .file-meta-row { display:flex; align-items:flex-start; gap:12px; margin-bottom:12px; font-size:14px; color:var(--text-2); }
+    .file-meta-icon { font-size:16px; flex-shrink:0; margin-top:1px; }
+    .file-meta-text strong { color:var(--text-1); }
+    .file-actions { display:flex; gap:10px; margin-top:24px; flex-wrap:wrap; }
+
+    /* Empty state */
+    .gdrive-empty {
+      flex:1; display:flex; flex-direction:column; align-items:center;
+      justify-content:center; text-align:center; padding:40px;
+    }
+    .gdrive-empty-icon { font-size:56px; margin-bottom:20px; }
+    .gdrive-empty h3 { font-size:20px; font-weight:700; margin-bottom:8px; }
+    .gdrive-empty p { font-size:14px; color:var(--text-2); max-width:320px; line-height:1.7; }
+
+    /* AI panel */
+    .gdrive-ai-panel {
+      border-top:1px solid var(--border); background:var(--bg-1);
+      display:flex; flex-direction:column; max-height:340px;
+    }
+    .gdrive-ai-header {
+      display:flex; align-items:center; gap:10px; padding:12px 16px;
+      border-bottom:1px solid var(--border); font-size:13px; font-weight:600;
+    }
+    .gdrive-ai-messages { flex:1; overflow-y:auto; padding:12px 16px; min-height:80px; max-height:180px; }
+    .gdrive-ai-msg { font-size:13px; line-height:1.6; margin-bottom:10px; }
+    .gdrive-ai-msg.user-msg { color:var(--text-2); }
+    .gdrive-ai-msg.ai-msg { color:var(--text-1); }
+    .gdrive-ai-input-row {
+      display:flex; gap:8px; padding:10px 16px; border-top:1px solid var(--border);
+    }
+    .gdrive-ai-input {
+      flex:1; background:var(--bg-2); border:1px solid var(--border);
+      border-radius:8px; padding:8px 12px; color:var(--text-1); font-size:13px;
+      outline:none; font-family:inherit;
+    }
+    .gdrive-ai-input:focus { border-color:rgba(99,102,241,.45); }
+    .ai-quick-btns { display:flex; gap:6px; padding:8px 16px 0; flex-wrap:wrap; }
+    .ai-quick-btn {
+      font-size:11px; padding:4px 10px; border-radius:20px;
+      background:rgba(99,102,241,.12); border:1px solid rgba(99,102,241,.25);
+      color:#a5b4fc; cursor:pointer; transition:background .15s;
+    }
+    .ai-quick-btn:hover { background:rgba(99,102,241,.25); }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- Navbar -->
+  <nav class="app-nav">
+    <a href="/dashboard" class="app-nav-logo">
+      <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
+        <circle cx="14" cy="14" r="14" fill="url(#navLgD)"/>
+        <path d="M8 19L14 9L20 19" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="14" cy="9" r="2" fill="white"/>
+        <defs><linearGradient id="navLgD" x1="0" y1="0" x2="28" y2="28"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs>
+      </svg>
+      <span class="app-nav-logo-text">Mobilions<span class="app-nav-logo-ai"> AI</span></span>
+    </a>
+    <div class="app-nav-links">
+      <a href="/dashboard" class="nav-link">Agents</a>
+      <a href="/power-ups" class="nav-link">Power-Ups</a>
+      <a href="/brain" class="nav-link">Brain AI</a>
+      <a href="/integrations" class="nav-link nav-link--active">Integrations</a>
+    </div>
+    <div class="app-nav-right">
+      <div class="user-avatar" id="userAvatar">U</div>
+      <button class="btn btn-ghost btn-sm" id="logoutBtn">Log out</button>
+    </div>
+  </nav>
+
+  <div style="flex:1;display:flex;overflow:hidden;">
+  <div class="gdrive-layout" style="flex:1;">
+
+    <!-- Files sidebar -->
+    <aside class="gdrive-sidebar">
+      <div class="gdrive-sidebar-header">
+        <h2>📁 Google Drive</h2>
+        <div class="gdrive-connected-email" id="connectedEmail">Loading…</div>
+      </div>
+      <div class="gdrive-search">
+        <input class="gdrive-search-input" id="searchInput" placeholder="Search files…" />
+        <button class="btn btn-primary btn-sm" id="searchBtn">Go</button>
+      </div>
+      <div class="file-list" id="fileList">
+        <div style="padding:20px;color:var(--text-3);font-size:13px;">Loading files…</div>
+      </div>
+    </aside>
+
+    <!-- Main area -->
+    <main class="gdrive-main">
+      <div class="gdrive-topbar">
+        <h1 id="topbarTitle">Recent Files</h1>
+        <div class="gdrive-topbar-right">
+          <button class="btn btn-outline btn-sm" id="refreshBtn">↻ Refresh</button>
+        </div>
+      </div>
+
+      <div class="gdrive-content">
+        <!-- Empty state -->
+        <div class="gdrive-empty" id="emptyState">
+          <div class="gdrive-empty-icon">📁</div>
+          <h3>Your Drive, supercharged</h3>
+          <p>Select a file to view details, or ask AI to find, summarize, and help you work with your documents.</p>
+          <button class="btn btn-primary" id="openAiBtn" style="margin-top:20px;">🤖 Ask AI about your files</button>
+        </div>
+
+        <!-- File detail -->
+        <div class="file-detail" id="fileDetail">
+          <div class="file-detail-icon" id="detailIcon">📄</div>
+          <div class="file-detail-name" id="detailName"></div>
+          <div class="file-meta-row">
+            <span class="file-meta-icon">📂</span>
+            <span class="file-meta-text" id="detailType"></span>
+          </div>
+          <div class="file-meta-row" id="detailSizeRow">
+            <span class="file-meta-icon">💾</span>
+            <span class="file-meta-text" id="detailSize"></span>
+          </div>
+          <div class="file-meta-row">
+            <span class="file-meta-icon">🕐</span>
+            <span class="file-meta-text" id="detailModified"></span>
+          </div>
+          <div class="file-meta-row" id="detailOwnerRow">
+            <span class="file-meta-icon">👤</span>
+            <span class="file-meta-text" id="detailOwner"></span>
+          </div>
+          <div class="file-actions">
+            <a class="btn btn-primary btn-sm" id="openFileLink" href="#" target="_blank">↗ Open in Drive</a>
+            <button class="btn btn-outline btn-sm" id="aiSummarizeBtn">🤖 Summarize</button>
+            <button class="btn btn-outline btn-sm" id="aiAnalyzeBtn">📊 Analyze</button>
+            <button class="btn btn-outline btn-sm" id="aiSuggestBtn">💡 Suggest improvements</button>
+          </div>
+        </div>
+
+        <!-- AI panel -->
+        <div class="gdrive-ai-panel" id="aiPanel" style="display:none;">
+          <div class="gdrive-ai-header">
+            <span>🤖</span> Kira — AI Drive Assistant
+            <button class="btn btn-ghost btn-sm" id="closeAiPanel" style="margin-left:auto;">✕</button>
+          </div>
+          <div class="ai-quick-btns">
+            <button class="ai-quick-btn" data-q="What are my most recently modified files?">Recent files</button>
+            <button class="ai-quick-btn" data-q="Show me all my Google Docs">My Docs</button>
+            <button class="ai-quick-btn" data-q="Find my spreadsheets">Spreadsheets</button>
+            <button class="ai-quick-btn" data-q="What shared files do I have?">Shared files</button>
+          </div>
+          <div class="gdrive-ai-messages" id="aiMessages"></div>
+          <div class="gdrive-ai-input-row">
+            <input class="gdrive-ai-input" id="aiInput" placeholder="Ask about your files, e.g. 'Summarize my project proposal doc'…" />
+            <button class="btn btn-primary btn-sm" id="aiSendBtn">Send</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  </div>
+</div>
+
+<script type="module">
+  import { requireAuth, getUser, getToken, clearSession, getInitials, apiFetch } from "/auth.js";
+  if (!requireAuth()) throw new Error("not authed");
+
+  const user = getUser();
+  document.getElementById("userAvatar").textContent = getInitials(user?.name || "U");
+  document.getElementById("logoutBtn").addEventListener("click", () => { clearSession(); window.location.href = "/login"; });
+
+  let currentFile = null;
+  let allFiles    = [];
+
+  // ── Load files ─────────────────────────────────────────────────────────────
+  async function loadFiles(query = "") {
+    const list = document.getElementById("fileList");
+    list.innerHTML = `<div style="padding:20px;color:var(--text-3);font-size:13px;">Loading files…</div>`;
+    try {
+      const url = query
+        ? `/api/integrations/gdrive/files?q=${encodeURIComponent(query)}&max=30`
+        : `/api/integrations/gdrive/files?max=30`;
+      const res = await apiFetch(url);
+      if (!res || !res.ok) {
+        const err = res ? await res.json().catch(() => ({})) : {};
+        const msg = err.error || "Failed to load files";
+        if (msg.includes("not connected")) {
+          list.innerHTML = `
+            <div style="padding:20px;text-align:center;">
+              <div style="font-size:32px;margin-bottom:12px;">📁</div>
+              <div style="font-size:13px;color:var(--text-2);margin-bottom:14px;">Drive not connected.</div>
+              <a href="/integrations" class="btn btn-primary btn-sm" style="display:inline-flex;">Connect Google Drive</a>
+            </div>`;
+          document.getElementById("connectedEmail").textContent = "Not connected";
+        } else {
+          list.innerHTML = `<div style="padding:20px;color:#f87171;font-size:13px;">${msg}</div>`;
+        }
+        return;
+      }
+      const data = await res.json();
+      allFiles = data.files || [];
+      if (data.connectedEmail) document.getElementById("connectedEmail").textContent = data.connectedEmail;
+      renderFileList(allFiles);
+    } catch (e) {
+      list.innerHTML = `<div style="padding:20px;color:#f87171;font-size:13px;">Error: ${e.message}</div>`;
+    }
+  }
+
+  function renderFileList(files) {
+    const list = document.getElementById("fileList");
+    if (!files.length) {
+      list.innerHTML = `<div style="padding:20px;color:var(--text-3);font-size:13px;">No files found.</div>`;
+      return;
+    }
+    list.innerHTML = files.map(f => {
+      const size     = f.size ? `${Math.round(f.size / 1024)}KB` : "";
+      const modified = f.modifiedTime
+        ? new Date(f.modifiedTime).toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" })
+        : "";
+      return `
+        <div class="file-item" data-id="${f.id}">
+          <div class="file-item-row">
+            <span class="file-icon">${fileEmoji(f.mimeType)}</span>
+            <div class="file-item-info">
+              <div class="file-item-name">${escHtml(f.name)}</div>
+              <div class="file-item-meta">${[friendlyType(f.mimeType), size, modified].filter(Boolean).join(" · ")}</div>
+            </div>
+          </div>
+        </div>`;
+    }).join("");
+
+    list.querySelectorAll(".file-item").forEach(el => {
+      el.addEventListener("click", () => openFile(el.dataset.id));
+    });
+  }
+
+  // ── Open file detail ───────────────────────────────────────────────────────
+  function openFile(fileId) {
+    const f = allFiles.find(x => x.id === fileId);
+    if (!f) return;
+    currentFile = f;
+
+    document.querySelectorAll(".file-item").forEach(el => el.classList.toggle("active", el.dataset.id === fileId));
+    document.getElementById("emptyState").style.display = "none";
+    document.getElementById("fileDetail").classList.add("visible");
+    document.getElementById("topbarTitle").textContent = f.name || "File";
+
+    document.getElementById("detailIcon").textContent = fileEmoji(f.mimeType);
+    document.getElementById("detailName").textContent = f.name || "(unnamed)";
+    document.getElementById("detailType").innerHTML = `<strong>Type:</strong> ${friendlyType(f.mimeType)}`;
+
+    const sizeRow = document.getElementById("detailSizeRow");
+    if (f.size) {
+      sizeRow.style.display = "flex";
+      document.getElementById("detailSize").innerHTML = `<strong>Size:</strong> ${Math.round(f.size / 1024)} KB`;
+    } else {
+      sizeRow.style.display = "none";
+    }
+
+    const modified = f.modifiedTime
+      ? new Date(f.modifiedTime).toLocaleString("en-US", { weekday:"short", month:"short", day:"numeric", year:"numeric", hour:"numeric", minute:"2-digit", hour12:true })
+      : "Unknown";
+    document.getElementById("detailModified").innerHTML = `<strong>Modified:</strong> ${modified}`;
+
+    const ownerRow = document.getElementById("detailOwnerRow");
+    if (f.owners?.length) {
+      ownerRow.style.display = "flex";
+      document.getElementById("detailOwner").innerHTML = `<strong>Owner:</strong> ${escHtml(f.owners.map(o => o.emailAddress || o.displayName).join(", "))}`;
+    } else {
+      ownerRow.style.display = "none";
+    }
+
+    const link = document.getElementById("openFileLink");
+    if (f.webViewLink) { link.href = f.webViewLink; link.style.display = ""; }
+    else link.style.display = "none";
+  }
+
+  // ── Search ─────────────────────────────────────────────────────────────────
+  document.getElementById("searchBtn").addEventListener("click", () => {
+    const q = document.getElementById("searchInput").value.trim();
+    document.getElementById("topbarTitle").textContent = q ? `Search: "${q}"` : "Recent Files";
+    loadFiles(q);
+  });
+  document.getElementById("searchInput").addEventListener("keydown", e => {
+    if (e.key === "Enter") document.getElementById("searchBtn").click();
+  });
+
+  document.getElementById("refreshBtn").addEventListener("click", () => {
+    document.getElementById("searchInput").value = "";
+    document.getElementById("topbarTitle").textContent = "Recent Files";
+    loadFiles();
+  });
+
+  // ── AI panel ───────────────────────────────────────────────────────────────
+  document.getElementById("openAiBtn").addEventListener("click", () => showAiPanel());
+  document.getElementById("closeAiPanel").addEventListener("click", () => {
+    document.getElementById("aiPanel").style.display = "none";
+  });
+  document.getElementById("aiSendBtn").addEventListener("click", askAI);
+  document.getElementById("aiInput").addEventListener("keydown", e => { if (e.key === "Enter") askAI(); });
+  document.querySelectorAll(".ai-quick-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.getElementById("aiInput").value = btn.dataset.q;
+      showAiPanel();
+      askAI();
+    });
+  });
+
+  document.getElementById("aiSummarizeBtn").addEventListener("click", () => {
+    if (!currentFile) return;
+    document.getElementById("aiInput").value = `Summarize the file "${currentFile.name}" and tell me what it contains.`;
+    showAiPanel(); askAI();
+  });
+  document.getElementById("aiAnalyzeBtn").addEventListener("click", () => {
+    if (!currentFile) return;
+    document.getElementById("aiInput").value = `Analyze the file "${currentFile.name}" — what is it about and what are the key points?`;
+    showAiPanel(); askAI();
+  });
+  document.getElementById("aiSuggestBtn").addEventListener("click", () => {
+    if (!currentFile) return;
+    document.getElementById("aiInput").value = `What improvements or next steps would you suggest for the file "${currentFile.name}"?`;
+    showAiPanel(); askAI();
+  });
+
+  function showAiPanel() {
+    const panel = document.getElementById("aiPanel");
+    panel.style.display = "flex";
+    panel.style.flexDirection = "column";
+  }
+
+  async function askAI() {
+    const input = document.getElementById("aiInput");
+    const msg   = input.value.trim();
+    if (!msg) return;
+    input.value = "";
+    showAiPanel();
+
+    const messagesEl = document.getElementById("aiMessages");
+    messagesEl.innerHTML += `<div class="gdrive-ai-msg user-msg">You: ${escHtml(msg)}</div>`;
+    const aiMsgEl = document.createElement("div");
+    aiMsgEl.className = "gdrive-ai-msg ai-msg";
+    aiMsgEl.textContent = "🤖 ";
+    messagesEl.appendChild(aiMsgEl);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+
+    const res = await fetch("/api/integrations/gdrive/ask", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${getToken()}` },
+      body: JSON.stringify({ message: msg }),
+    });
+
+    if (!res.ok) { aiMsgEl.textContent = "🤖 Error: could not get response."; return; }
+
+    const reader  = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let content = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+      for (const line of lines) {
+        if (!line.startsWith("data: ")) continue;
+        const data = line.slice(6).trim();
+        if (data === "[DONE]") break;
+        try {
+          const d = JSON.parse(data);
+          if (d.delta) {
+            content += d.delta;
+            aiMsgEl.textContent = "🤖 " + content;
+            messagesEl.scrollTop = messagesEl.scrollHeight;
+          }
+        } catch {}
+      }
+    }
+  }
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  function escHtml(s) {
+    return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+
+  function fileEmoji(mimeType = "") {
+    if (mimeType.includes("google-apps.document"))     return "📝";
+    if (mimeType.includes("google-apps.spreadsheet"))  return "📊";
+    if (mimeType.includes("google-apps.presentation")) return "📑";
+    if (mimeType.includes("google-apps.folder"))       return "📂";
+    if (mimeType.includes("google-apps.form"))         return "📋";
+    if (mimeType.includes("pdf"))                      return "📕";
+    if (mimeType.includes("image"))                    return "🖼️";
+    if (mimeType.includes("video"))                    return "🎬";
+    if (mimeType.includes("audio"))                    return "🎵";
+    if (mimeType.includes("zip") || mimeType.includes("compressed")) return "🗜️";
+    return "📄";
+  }
+
+  function friendlyType(mimeType = "") {
+    if (mimeType.includes("google-apps.document"))     return "Google Doc";
+    if (mimeType.includes("google-apps.spreadsheet"))  return "Google Sheet";
+    if (mimeType.includes("google-apps.presentation")) return "Google Slides";
+    if (mimeType.includes("google-apps.folder"))       return "Folder";
+    if (mimeType.includes("google-apps.form"))         return "Google Form";
+    if (mimeType.includes("pdf"))                      return "PDF";
+    if (mimeType.includes("image"))                    return "Image";
+    if (mimeType.includes("video"))                    return "Video";
+    if (mimeType.includes("audio"))                    return "Audio";
+    if (mimeType.includes("zip") || mimeType.includes("compressed")) return "Archive";
+    if (mimeType.includes("text"))                     return "Text file";
+    return "File";
+  }
+
+  loadFiles();
+</script>
+</body>
+</html>

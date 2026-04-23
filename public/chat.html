@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Chat — Mobilions AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/app-styles.css" />
+</head>
+<body>
+<div class="chat-layout">
+
+  <!-- Sidebar -->
+  <aside class="chat-sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <a href="/dashboard" class="sidebar-back">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7L9 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        All agents
+      </a>
+      <div class="sidebar-agent-avatar" id="sidebarAvatar"></div>
+      <div class="sidebar-agent-name" id="sidebarName">…</div>
+      <div class="sidebar-agent-role" id="sidebarRole">…</div>
+      <div class="sidebar-status"><div class="status-dot"></div>Online · 24/7</div>
+    </div>
+
+    <div class="sidebar-desc" id="sidebarDesc">Loading…</div>
+
+    <div class="sidebar-examples">
+      <div class="sidebar-examples-title">Try asking</div>
+      <div id="exampleBtns"></div>
+    </div>
+
+    <div class="sidebar-actions">
+      <button class="btn btn-danger btn-sm" id="clearBtn">Clear conversation</button>
+      <a href="/dashboard" class="btn btn-ghost btn-sm">← Dashboard</a>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="chat-main">
+
+    <!-- Top bar -->
+    <div class="chat-topbar">
+      <div class="chat-topbar-avatar" id="topbarAvatar"></div>
+      <div>
+        <div class="chat-topbar-name" id="topbarName">…</div>
+        <div class="chat-topbar-role" id="topbarRole">…</div>
+      </div>
+      <div class="chat-topbar-right">
+        <button class="btn btn-ghost btn-sm" id="clearBtnTop">Clear</button>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="messages-area" id="messagesArea">
+      <div class="messages-empty" id="emptyState">
+        <div class="messages-empty-avatar" id="emptyAvatar"></div>
+        <h3 id="emptyTitle">Start a conversation</h3>
+        <p id="emptyDesc">Ask anything — I'm here to help.</p>
+      </div>
+    </div>
+
+    <!-- Input -->
+    <div class="chat-input-area">
+      <div class="chat-input-wrap">
+        <textarea
+          class="chat-textarea"
+          id="chatInput"
+          placeholder="Type a message…"
+          rows="1"
+        ></textarea>
+        <button class="chat-send-btn" id="sendBtn" aria-label="Send">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M2 8L14 2L8 14L7 9L2 8Z" fill="white" stroke="white" stroke-width=".5" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="chat-hint">Enter to send · Shift+Enter for new line</div>
+    </div>
+  </main>
+</div>
+
+<script type="module">
+  import { requireAuth, getUser, getToken, clearSession, getInitials, apiFetch } from "/auth.js";
+  if (!requireAuth()) throw new Error("not authed");
+
+  // ── Read agent ID from URL ──────────────────────────────────────────────
+  const params  = new URLSearchParams(location.search);
+  const AGENT_ID = params.get("agent") || "";
+
+  if (!AGENT_ID) { window.location.href = "/dashboard"; throw new Error("no agent"); }
+
+  // ── Load agent info ─────────────────────────────────────────────────────
+  const agentRes = await apiFetch(`/api/agents/${AGENT_ID}`);
+  if (!agentRes.ok) { window.location.href = "/dashboard"; throw new Error("agent not found"); }
+  const { agent } = await agentRes.json();
+
+  // ── Populate UI with agent info ─────────────────────────────────────────
+  document.title = `${agent.name} — Mobilions AI`;
+
+  function setEl(id, val, prop = "textContent") { const el = document.getElementById(id); if (el) el[prop] = val; }
+
+  // Sidebar
+  const sidebarAvatar = document.getElementById("sidebarAvatar");
+  sidebarAvatar.textContent = agent.emoji;
+  sidebarAvatar.style.background = agent.gradient;
+  setEl("sidebarName", agent.name);
+  setEl("sidebarRole", agent.role);
+  setEl("sidebarDesc", agent.description);
+
+  // Examples
+  const examplesEl = document.getElementById("exampleBtns");
+  agent.examples.forEach(ex => {
+    const btn = document.createElement("button");
+    btn.className = "example-btn";
+    btn.textContent = ex;
+    btn.addEventListener("click", () => { chatInput.value = ex; chatInput.dispatchEvent(new Event("input")); sendMessage(); });
+    examplesEl.appendChild(btn);
+  });
+
+  // Topbar
+  const topbarAvatarEl = document.getElementById("topbarAvatar");
+  topbarAvatarEl.textContent = agent.emoji;
+  topbarAvatarEl.style.background = agent.gradient;
+  topbarAvatarEl.style.width = "36px"; topbarAvatarEl.style.height = "36px";
+  topbarAvatarEl.style.borderRadius = "10px"; topbarAvatarEl.style.display = "flex";
+  topbarAvatarEl.style.alignItems = "center"; topbarAvatarEl.style.justifyContent = "center";
+  topbarAvatarEl.style.fontSize = "16px";
+  setEl("topbarName", agent.name);
+  setEl("topbarRole", agent.role);
+
+  // Empty state
+  const emptyAvatarEl = document.getElementById("emptyAvatar");
+  emptyAvatarEl.textContent = agent.emoji;
+  emptyAvatarEl.style.background = agent.gradient;
+  setEl("emptyTitle", `Chat with ${agent.name}`);
+  setEl("emptyDesc", agent.description);
+
+  // ── Load conversation history ───────────────────────────────────────────
+  const histRes = await apiFetch(`/api/chat/${AGENT_ID}/history`);
+  const { messages: history } = await histRes.json();
+
+  const messagesArea = document.getElementById("messagesArea");
+  const emptyState   = document.getElementById("emptyState");
+
+  const user = getUser();
+
+  if (history.length > 0) {
+    emptyState.remove();
+    history.forEach(msg => appendMessage(msg.role, msg.content, msg.timestamp));
+    scrollBottom();
+  }
+
+  // ── Chat functions ──────────────────────────────────────────────────────
+  function escHtml(str) {
+    return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+
+  function formatMarkdown(text) {
+    return text
+      // Code blocks
+      .replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) => `<pre><code>${escHtml(code.trim())}</code></pre>`)
+      // Inline code
+      .replace(/`([^`]+)`/g, (_, c) => `<code>${escHtml(c)}</code>`)
+      // Bold
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      // Italic
+      .replace(/\*(.+?)\*/g, "<em>$1</em>")
+      // Headings
+      .replace(/^### (.+)$/gm, "<h3>$1</h3>")
+      .replace(/^## (.+)$/gm, "<h3>$1</h3>")
+      // Unordered lists
+      .replace(/^\s*[-*] (.+)$/gm, "<li>$1</li>")
+      .replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>")
+      // Numbered lists
+      .replace(/^\d+\. (.+)$/gm, "<li>$1</li>")
+      // Paragraph breaks
+      .replace(/\n\n+/g, "</p><p>")
+      .replace(/\n/g, "<br>");
+  }
+
+  function formatTime(ts) {
+    try { return new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }); }
+    catch { return ""; }
+  }
+
+  function appendMessage(role, content, timestamp) {
+    // Remove empty state
+    const empty = document.getElementById("emptyState");
+    if (empty) empty.remove();
+
+    const isUser = role === "user";
+    const row = document.createElement("div");
+    row.className = `msg-row ${isUser ? "msg-row--user" : ""}`;
+
+    const avatarEl = document.createElement("div");
+    avatarEl.className = "msg-avatar " + (isUser ? "msg-avatar--user" : "");
+    if (isUser) {
+      avatarEl.textContent = getInitials(user?.name || "U");
+    } else {
+      avatarEl.textContent = agent.emoji;
+      avatarEl.style.background = agent.gradient;
+      avatarEl.style.fontSize = "13px";
+      avatarEl.style.borderRadius = "9px";
+    }
+
+    const bubble = document.createElement("div");
+    bubble.className = `msg-bubble msg-bubble--${role}`;
+
+    const contentEl = document.createElement("div");
+    contentEl.className = "msg-text";
+    if (isUser) {
+      contentEl.textContent = content;
+    } else {
+      contentEl.innerHTML = formatMarkdown(content || "");
+    }
+
+    const timeEl = document.createElement("div");
+    timeEl.className = "msg-time";
+    timeEl.textContent = formatTime(timestamp || new Date().toISOString());
+
+    bubble.appendChild(contentEl);
+    bubble.appendChild(timeEl);
+    row.appendChild(avatarEl);
+    row.appendChild(bubble);
+    messagesArea.appendChild(row);
+    scrollBottom();
+    return { row, contentEl, timeEl };
+  }
+
+  function appendTyping() {
+    const row = document.createElement("div");
+    row.className = "typing-row";
+    row.id = "typingRow";
+
+    const avatarEl = document.createElement("div");
+    avatarEl.className = "msg-avatar";
+    avatarEl.textContent = agent.emoji;
+    avatarEl.style.background = agent.gradient;
+    avatarEl.style.fontSize = "13px";
+    avatarEl.style.borderRadius = "9px";
+
+    const bubble = document.createElement("div");
+    bubble.className = "typing-bubble";
+    bubble.innerHTML = `<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>`;
+
+    row.appendChild(avatarEl);
+    row.appendChild(bubble);
+    messagesArea.appendChild(row);
+    scrollBottom();
+    return row;
+  }
+
+  function scrollBottom() {
+    messagesArea.scrollTop = messagesArea.scrollHeight;
+  }
+
+  const chatInput = document.getElementById("chatInput");
+  const sendBtn   = document.getElementById("sendBtn");
+
+  // Auto-resize textarea
+  chatInput.addEventListener("input", () => {
+    chatInput.style.height = "auto";
+    chatInput.style.height = Math.min(chatInput.scrollHeight, 160) + "px";
+  });
+
+  chatInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  });
+
+  sendBtn.addEventListener("click", sendMessage);
+
+  let sending = false;
+
+  async function sendMessage() {
+    const text = chatInput.value.trim();
+    if (!text || sending) return;
+    sending = true;
+
+    chatInput.value = "";
+    chatInput.style.height = "auto";
+    sendBtn.disabled = true;
+
+    // Append user message
+    appendMessage("user", text, new Date().toISOString());
+
+    // Show typing indicator
+    const typingRow = appendTyping();
+    scrollBottom();
+
+    // Create assistant bubble (initially empty)
+    let assistantRow = null;
+    let contentEl    = null;
+    let timeEl       = null;
+    let fullContent  = "";
+
+    const timestamp = new Date().toISOString();
+
+    try {
+      const response = await fetch(`/api/chat/${AGENT_ID}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${getToken()}` },
+        body: JSON.stringify({ message: text }),
+      });
+
+      if (response.status === 401) { clearSession(); window.location.href = "/login"; return; }
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        typingRow.remove();
+        appendMessage("assistant", `Sorry, something went wrong: ${errData.error || response.statusText}`, timestamp);
+        return;
+      }
+
+      // Stream SSE
+      const reader  = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer    = "";
+      let started   = false;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          const data = line.slice(6).trim();
+          if (data === "[DONE]") break;
+
+          try {
+            const parsed = JSON.parse(data);
+
+            // Error from server
+            if (parsed.error) {
+              typingRow.remove();
+              appendMessage("assistant", `Error: ${parsed.error}`, timestamp);
+              break;
+            }
+
+            if (parsed.delta) {
+              // First delta — remove typing indicator, create assistant bubble
+              if (!started) {
+                typingRow.remove();
+                started = true;
+                const result = appendMessage("assistant", "", timestamp);
+                assistantRow = result.row;
+                contentEl    = result.contentEl;
+                timeEl       = result.timeEl;
+              }
+              fullContent += parsed.delta;
+              contentEl.innerHTML = formatMarkdown(fullContent);
+              scrollBottom();
+            }
+          } catch { /* ignore */ }
+        }
+      }
+    } catch (err) {
+      typingRow.remove();
+      if (!assistantRow) {
+        appendMessage("assistant", "Connection error. Please try again.", timestamp);
+      }
+    } finally {
+      sending = false;
+      sendBtn.disabled = false;
+      chatInput.focus();
+    }
+  }
+
+  // ── Clear conversation ─────────────────────────────────────────────────
+  async function clearConversation() {
+    if (!confirm(`Clear all messages with ${agent.name}? This cannot be undone.`)) return;
+    await apiFetch(`/api/chat/${AGENT_ID}/history`, { method: "DELETE" });
+    messagesArea.innerHTML = "";
+    const emptyDiv = document.createElement("div");
+    emptyDiv.id = "emptyState";
+    emptyDiv.className = "messages-empty";
+    emptyDiv.innerHTML = `
+      <div class="messages-empty-avatar" style="background:${agent.gradient}">${agent.emoji}</div>
+      <h3>Chat with ${agent.name}</h3>
+      <p>${agent.description}</p>`;
+    messagesArea.appendChild(emptyDiv);
+  }
+
+  document.getElementById("clearBtn").addEventListener("click", clearConversation);
+  document.getElementById("clearBtnTop").addEventListener("click", clearConversation);
+</script>
+</body>
+</html>

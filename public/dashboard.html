@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dashboard — Mobilions AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/app-styles.css" />
+  <link rel="stylesheet" href="/app-extended.css" />
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- Navbar -->
+  <nav class="app-nav">
+    <a href="/dashboard" class="app-nav-logo">
+      <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
+        <circle cx="14" cy="14" r="14" fill="url(#navLg)"/>
+        <path d="M8 19L14 9L20 19" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="14" cy="9" r="2" fill="white"/>
+        <defs><linearGradient id="navLg" x1="0" y1="0" x2="28" y2="28"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs>
+      </svg>
+      <span class="app-nav-logo-text">Mobilions<span class="app-nav-logo-ai"> AI</span></span>
+    </a>
+    <div class="app-nav-links">
+      <a href="/dashboard" class="nav-link nav-link--active">Agents</a>
+      <a href="/power-ups" class="nav-link">Power-Ups</a>
+      <a href="/brain" class="nav-link">Brain AI</a>
+      <a href="/integrations" class="nav-link">Integrations</a>
+    </div>
+    <div class="app-nav-right">
+      <div class="app-nav-user">
+        <div class="user-avatar" id="userAvatar">U</div>
+        <span class="user-name" id="userName">Loading…</span>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="logoutBtn">Log out</button>
+    </div>
+  </nav>
+
+  <!-- Body -->
+  <main class="dashboard-body">
+    <div class="dashboard-hero">
+      <h1>Your AI Team 👋</h1>
+      <p>12 specialist agents ready to work. Pick one and start a conversation.</p>
+    </div>
+
+    <!-- Products grid -->
+    <div class="products-grid">
+      <a href="/dashboard#agents" class="product-card">
+        <div class="product-card-icon" style="background:linear-gradient(135deg,#6366f1,#a855f7)">🤖</div>
+        <div class="product-card-body">
+          <div class="product-card-title">AI Agents</div>
+          <div class="product-card-desc">12 specialist agents ready to chat — social, sales, SEO, support, and more.</div>
+        </div>
+        <div class="product-card-arrow">→</div>
+      </a>
+      <a href="/power-ups" class="product-card">
+        <div class="product-card-icon" style="background:linear-gradient(135deg,#f97316,#eab308)">⚡</div>
+        <div class="product-card-body">
+          <div class="product-card-title">Power-Ups</div>
+          <div class="product-card-desc">40+ instant task tools. Fill a form, get expert AI output in seconds.</div>
+        </div>
+        <div class="product-card-arrow">→</div>
+      </a>
+      <a href="/brain" class="product-card">
+        <div class="product-card-icon" style="background:linear-gradient(135deg,#06b6d4,#6366f1)">🧠</div>
+        <div class="product-card-body">
+          <div class="product-card-title">Brain AI</div>
+          <div class="product-card-desc">Your business memory. Upload knowledge and all agents learn from it.</div>
+        </div>
+        <div class="product-card-arrow">→</div>
+      </a>
+      <a href="/integrations" class="product-card">
+        <div class="product-card-icon" style="background:linear-gradient(135deg,#10b981,#22c55e)">🔗</div>
+        <div class="product-card-body">
+          <div class="product-card-title">Integrations</div>
+          <div class="product-card-desc">Connect Gmail, Slack, Notion, and 20+ more tools to your AI team.</div>
+        </div>
+        <div class="product-card-arrow">→</div>
+      </a>
+    </div>
+
+    <!-- Agents grid -->
+    <div class="dashboard-agents-header" id="agents">
+      <h2>Your AI Agents</h2>
+      <p>12 specialists, one team. Click any agent to start chatting.</p>
+    </div>
+    <div class="agents-grid" id="agentsGrid">
+      <div style="color:#475569;font-size:14px;padding:20px;">Loading agents…</div>
+    </div>
+
+    <!-- Recent conversations -->
+    <section class="recent-section" id="recentSection" style="display:none;">
+      <h2>Recent Conversations</h2>
+      <div class="recent-grid" id="recentGrid"></div>
+    </section>
+  </main>
+</div>
+
+<script type="module">
+  import { requireAuth, getUser, getToken, clearSession, getInitials, apiFetch } from "/auth.js";
+  if (!requireAuth()) throw new Error("not authed");
+
+  const user = getUser();
+  document.getElementById("userName").textContent = user?.name || "User";
+  document.getElementById("userAvatar").textContent = getInitials(user?.name || "U");
+
+  document.getElementById("logoutBtn").addEventListener("click", () => {
+    clearSession(); window.location.href = "/login";
+  });
+
+  // Load agents + conversations in parallel
+  const [agentsRes, convsRes] = await Promise.all([
+    apiFetch("/api/agents"),
+    apiFetch("/api/conversations"),
+  ]);
+
+  const { agents } = await agentsRes.json();
+  const { conversations } = await convsRes.json();
+
+  // Map conversations by agentId
+  const convMap = {};
+  conversations.forEach(c => convMap[c.agentId] = c);
+
+  // Render agent grid
+  const grid = document.getElementById("agentsGrid");
+  grid.innerHTML = agents.map(agent => {
+    const conv = convMap[agent.id];
+    const hasConvo = conv && conv.messageCount > 0;
+    return `
+    <a href="/chat?agent=${agent.id}" class="agent-card" style="--glow-color:${agent.color}40">
+      <div class="agent-card-glow"></div>
+      <div class="agent-card-header">
+        <div class="agent-avatar" style="background:${agent.gradient}">${agent.emoji}</div>
+        <div>
+          <div class="agent-tag" style="background:${agent.tagBg};color:${agent.tagColor}">${agent.role.replace("AI ","")}</div>
+          ${hasConvo ? `<div class="has-convo-badge" style="margin-top:4px"><div class="has-convo-dot"></div>${conv.messageCount / 2 | 0} chats</div>` : ""}
+        </div>
+      </div>
+      <div class="agent-name">${agent.name}</div>
+      <div class="agent-role">${agent.role}</div>
+      <div class="agent-desc">${agent.description}</div>
+      <div class="agent-caps">
+        ${agent.capabilities.slice(0,3).map(c => `<span class="agent-cap">${c}</span>`).join("")}
+      </div>
+      <div class="agent-chat-btn">Chat with ${agent.name} →</div>
+    </a>`;
+  }).join("");
+
+  // Render recent conversations
+  const recent = conversations.filter(c => c.messageCount > 0).slice(0, 6);
+  if (recent.length > 0) {
+    document.getElementById("recentSection").style.display = "block";
+    const rGrid = document.getElementById("recentGrid");
+    rGrid.innerHTML = recent.map(c => {
+      const agent = agents.find(a => a.id === c.agentId);
+      if (!agent) return "";
+      const lastMsg = c.lastMessage?.content || "No messages yet";
+      const truncated = lastMsg.length > 60 ? lastMsg.slice(0, 60) + "…" : lastMsg;
+      return `
+      <a href="/chat?agent=${agent.id}" class="recent-card">
+        <div class="recent-avatar" style="background:${agent.gradient}">${agent.emoji}</div>
+        <div class="recent-info">
+          <div class="recent-name">${agent.name} — ${agent.role.replace("AI ","")}</div>
+          <div class="recent-msg">${truncated}</div>
+        </div>
+        <span class="recent-count">${c.messageCount / 2 | 0} msgs</span>
+      </a>`;
+    }).join("");
+  }
+</script>
+</body>
+</html>

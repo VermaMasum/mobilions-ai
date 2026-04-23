@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gmail — Mobilions AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/app-styles.css" />
+  <link rel="stylesheet" href="/app-extended.css" />
+  <style>
+    .gmail-layout { display:flex; height:100vh; overflow:hidden; }
+    .gmail-sidebar {
+      width:300px; flex-shrink:0; display:flex; flex-direction:column;
+      background:var(--bg-1); border-right:1px solid var(--border); overflow:hidden;
+    }
+    .gmail-sidebar-header { padding:16px 18px; border-bottom:1px solid var(--border); }
+    .gmail-sidebar-header h2 { font-size:16px; font-weight:700; margin-bottom:4px; }
+    .gmail-connected-email { font-size:12px; color:var(--text-3); }
+    .email-list { flex:1; overflow-y:auto; }
+    .email-item {
+      padding:14px 18px; border-bottom:1px solid var(--border);
+      cursor:pointer; transition:background var(--tr);
+    }
+    .email-item:hover { background:rgba(255,255,255,.04); }
+    .email-item.active { background:rgba(99,102,241,.1); border-left:3px solid var(--accent); }
+    .email-item.unread .email-item-subject { font-weight:700; color:var(--text-1); }
+    .email-item-from { font-size:12px; font-weight:600; color:var(--text-2); margin-bottom:3px;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .email-item-subject { font-size:13px; color:var(--text-2); margin-bottom:3px;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .email-item-snippet { font-size:11px; color:var(--text-3); line-height:1.4;
+      display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .email-item-date { font-size:10px; color:var(--text-3); float:right; margin-top:-18px; }
+    .unread-dot { width:7px; height:7px; border-radius:50%; background:var(--accent);
+      display:inline-block; margin-right:6px; flex-shrink:0; }
+
+    .gmail-main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+    .gmail-topbar {
+      display:flex; align-items:center; gap:14px; padding:14px 20px;
+      border-bottom:1px solid var(--border);
+      background:rgba(4,4,15,.85); backdrop-filter:blur(20px);
+    }
+    .gmail-topbar h1 { font-size:18px; font-weight:700; }
+    .gmail-topbar-right { margin-left:auto; display:flex; gap:8px; }
+
+    .gmail-content { flex:1; overflow:hidden; display:flex; flex-direction:column; }
+
+    /* Email detail view */
+    .email-detail { flex:1; overflow-y:auto; padding:24px 28px; display:none; flex-direction:column; }
+    .email-detail.visible { display:flex; }
+    .email-detail-header { margin-bottom:20px; padding-bottom:20px; border-bottom:1px solid var(--border); }
+    .email-detail-subject { font-size:20px; font-weight:800; letter-spacing:-.02em; margin-bottom:12px; }
+    .email-meta { display:flex; flex-direction:column; gap:4px; font-size:13px; color:var(--text-2); }
+    .email-meta span strong { color:var(--text-1); }
+    .email-body { font-size:14px; color:var(--text-2); line-height:1.8; white-space:pre-wrap; flex:1; }
+    .email-actions { display:flex; gap:10px; margin-top:24px; flex-wrap:wrap; }
+
+    /* Empty state */
+    .gmail-empty {
+      flex:1; display:flex; flex-direction:column; align-items:center;
+      justify-content:center; text-align:center; padding:40px;
+    }
+    .gmail-empty-icon { font-size:56px; margin-bottom:20px; }
+    .gmail-empty h3 { font-size:20px; font-weight:700; margin-bottom:8px; }
+    .gmail-empty p { font-size:14px; color:var(--text-2); max-width:320px; line-height:1.7; }
+
+    /* AI ask panel */
+    .gmail-ai-panel {
+      border-top:1px solid var(--border); background:var(--bg-1);
+      display:flex; flex-direction:column; max-height:320px;
+    }
+    .gmail-ai-header {
+      display:flex; align-items:center; gap:10px; padding:12px 16px;
+      border-bottom:1px solid var(--border); font-size:13px; font-weight:600;
+    }
+    .gmail-ai-messages { flex:1; overflow-y:auto; padding:12px 16px; min-height:80px; max-height:180px; }
+    .gmail-ai-msg { font-size:13px; line-height:1.6; margin-bottom:10px; }
+    .gmail-ai-msg.user-msg { color:var(--text-2); }
+    .gmail-ai-msg.ai-msg { color:var(--text-1); }
+    .gmail-ai-msg.ai-msg::before { content:'🤖 '; }
+    .gmail-ai-input-row {
+      display:flex; gap:8px; padding:10px 16px; border-top:1px solid var(--border);
+    }
+    .gmail-ai-input {
+      flex:1; background:var(--bg-2); border:1px solid var(--border);
+      border-radius:8px; padding:8px 12px; color:var(--text-1); font-size:13px;
+      outline:none; font-family:inherit;
+    }
+    .gmail-ai-input:focus { border-color:rgba(99,102,241,.45); }
+
+    /* Send compose modal */
+    .compose-overlay {
+      display:none; position:fixed; inset:0; z-index:200;
+      background:rgba(0,0,0,.6); backdrop-filter:blur(4px);
+      align-items:center; justify-content:center;
+    }
+    .compose-overlay.open { display:flex; }
+    .compose-modal {
+      background:var(--bg-1); border:1px solid var(--border);
+      border-radius:16px; padding:28px; width:560px; max-width:95vw;
+    }
+    .compose-modal h3 { font-size:18px; font-weight:700; margin-bottom:20px; }
+    .compose-close { float:right; background:none; border:none; color:var(--text-3);
+      font-size:20px; cursor:pointer; margin-top:-4px; }
+    .compose-close:hover { color:var(--text-1); }
+    .compose-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:20px; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- Navbar -->
+  <nav class="app-nav">
+    <a href="/dashboard" class="app-nav-logo">
+      <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
+        <circle cx="14" cy="14" r="14" fill="url(#navLg)"/>
+        <path d="M8 19L14 9L20 19" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="14" cy="9" r="2" fill="white"/>
+        <defs><linearGradient id="navLg" x1="0" y1="0" x2="28" y2="28"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs>
+      </svg>
+      <span class="app-nav-logo-text">Mobilions<span class="app-nav-logo-ai"> AI</span></span>
+    </a>
+    <div class="app-nav-links">
+      <a href="/dashboard" class="nav-link">Agents</a>
+      <a href="/power-ups" class="nav-link">Power-Ups</a>
+      <a href="/brain" class="nav-link">Brain AI</a>
+      <a href="/integrations" class="nav-link nav-link--active">Integrations</a>
+    </div>
+    <div class="app-nav-right">
+      <div class="user-avatar" id="userAvatar">U</div>
+      <button class="btn btn-ghost btn-sm" id="logoutBtn">Log out</button>
+    </div>
+  </nav>
+
+  <div style="flex:1;display:flex;overflow:hidden;">
+  <div class="gmail-layout" style="flex:1;">
+
+    <!-- Email list sidebar -->
+    <aside class="gmail-sidebar">
+      <div class="gmail-sidebar-header">
+        <h2>📧 Gmail Inbox</h2>
+        <div class="gmail-connected-email" id="connectedEmail">Loading…</div>
+        <button class="btn btn-primary btn-sm" id="composeBtn" style="margin-top:10px;width:100%;justify-content:center;">
+          + Compose
+        </button>
+      </div>
+      <div class="email-list" id="emailList">
+        <div style="padding:20px;color:var(--text-3);font-size:13px;">Loading inbox…</div>
+      </div>
+    </aside>
+
+    <!-- Main area -->
+    <main class="gmail-main">
+      <div class="gmail-topbar">
+        <h1 id="topbarTitle">Select an email</h1>
+        <div class="gmail-topbar-right" id="topbarActions" style="display:none;">
+          <button class="btn btn-outline btn-sm" id="replyBtn">Reply</button>
+          <button class="btn btn-danger btn-sm" id="forwardBtn">Forward</button>
+        </div>
+      </div>
+
+      <div class="gmail-content">
+        <!-- Empty state -->
+        <div class="gmail-empty" id="emptyState">
+          <div class="gmail-empty-icon">📬</div>
+          <h3>Your inbox, supercharged</h3>
+          <p>Select an email to read it, then ask the AI to draft a reply, summarize threads, or compose new messages.</p>
+        </div>
+
+        <!-- Email detail -->
+        <div class="email-detail" id="emailDetail">
+          <div class="email-detail-header">
+            <div class="email-detail-subject" id="detailSubject"></div>
+            <div class="email-meta">
+              <span><strong>From:</strong> <span id="detailFrom"></span></span>
+              <span><strong>To:</strong> <span id="detailTo"></span></span>
+              <span><strong>Date:</strong> <span id="detailDate"></span></span>
+            </div>
+          </div>
+          <div class="email-body" id="detailBody">Loading…</div>
+          <div class="email-actions">
+            <button class="btn btn-primary btn-sm" id="aiSummarizeBtn">🤖 Summarize</button>
+            <button class="btn btn-outline btn-sm" id="aiDraftReplyBtn">✍️ Draft Reply</button>
+            <button class="btn btn-outline btn-sm" id="aiActionItemsBtn">📋 Extract Action Items</button>
+          </div>
+        </div>
+
+        <!-- AI assistant panel -->
+        <div class="gmail-ai-panel" id="aiPanel" style="display:none;">
+          <div class="gmail-ai-header">
+            <span>🤖</span> Flow — AI Email Assistant
+            <button class="btn btn-ghost btn-sm" id="closeAiPanel" style="margin-left:auto;">✕</button>
+          </div>
+          <div class="gmail-ai-messages" id="aiMessages"></div>
+          <div class="gmail-ai-input-row">
+            <input class="gmail-ai-input" id="aiInput" placeholder="Ask about this email…" />
+            <button class="btn btn-primary btn-sm" id="aiSendBtn">Send</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  </div>
+</div>
+
+<!-- Compose modal -->
+<div class="compose-overlay" id="composeOverlay">
+  <div class="compose-modal" style="width:620px;">
+    <button class="compose-close" id="closeCompose">✕</button>
+    <h3 id="composeTitle">Compose Email</h3>
+
+    <!-- AI prompt row -->
+    <div id="aiComposeSection" style="background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.25);border-radius:10px;padding:14px;margin-bottom:18px;">
+      <div style="font-size:12px;font-weight:600;color:#a5b4fc;margin-bottom:8px;">🤖 AI Compose — describe what you want to send</div>
+      <div style="display:flex;gap:8px;">
+        <input id="aiComposePrompt" class="form-input" style="flex:1;font-size:13px;"
+          placeholder="e.g. Write a follow-up email to a client about project delay, keep it professional" />
+        <button class="btn btn-primary btn-sm" id="aiComposeBtn" style="white-space:nowrap;">
+          <span id="aiComposeBtnText">✨ Generate</span>
+        </button>
+      </div>
+      <div id="aiComposeStatus" style="font-size:12px;color:var(--text-3);margin-top:6px;display:none;"></div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">To</label>
+      <input class="form-input" id="composeTo" type="email" placeholder="recipient@example.com" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Subject</label>
+      <input class="form-input" id="composeSubject" placeholder="Subject" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Message</label>
+      <textarea class="form-input" id="composeBody" rows="8" placeholder="Write your message… or use AI Generate above" style="resize:vertical;"></textarea>
+    </div>
+    <div class="compose-actions">
+      <button class="btn btn-ghost" id="saveDraftBtn">Save Draft</button>
+      <button class="btn btn-primary" id="sendEmailBtn">
+        <span id="sendBtnText">Send Email</span>
+        <span class="spinner" id="sendSpinner" style="display:none;"></span>
+      </button>
+    </div>
+    <div id="sendResult" style="margin-top:12px;font-size:13px;display:none;"></div>
+  </div>
+</div>
+
+<script type="module">
+  import { requireAuth, getUser, getToken, clearSession, getInitials, apiFetch } from "/auth.js";
+  if (!requireAuth()) throw new Error("not authed");
+
+  const user = getUser();
+  document.getElementById("userAvatar").textContent = getInitials(user?.name || "U");
+  document.getElementById("logoutBtn").addEventListener("click", () => { clearSession(); window.location.href = "/login"; });
+
+  let currentEmailId = null;
+  let currentEmail   = null;
+
+  // ── Load inbox ────────────────────────────────────────────────────────────
+  async function loadInbox() {
+    const emailList = document.getElementById("emailList");
+    try {
+      const inboxRes = await apiFetch("/api/integrations/gmail/inbox?max=25");
+      if (!inboxRes || !inboxRes.ok) {
+        const err = inboxRes ? await inboxRes.json().catch(() => ({})) : {};
+        const msg = err.error || "Failed to load inbox";
+        if (msg.includes("not connected") || msg.includes("Gmail not connected")) {
+          emailList.innerHTML = `
+            <div style="padding:20px;text-align:center;">
+              <div style="font-size:32px;margin-bottom:12px;">📧</div>
+              <div style="font-size:13px;color:var(--text-2);margin-bottom:14px;">Gmail not connected yet.</div>
+              <a href="/integrations" class="btn btn-primary btn-sm" style="display:inline-flex;">Connect Gmail</a>
+            </div>`;
+          document.getElementById("connectedEmail").textContent = "Not connected";
+        } else {
+          emailList.innerHTML = `<div style="padding:20px;color:#f87171;font-size:13px;">${msg}</div>`;
+        }
+        return;
+      }
+      const { emails, connectedEmail } = await inboxRes.json();
+      document.getElementById("connectedEmail").textContent = connectedEmail || "";
+
+      if (!emails.length) {
+        emailList.innerHTML = `<div style="padding:20px;color:var(--text-3);font-size:13px;">Your inbox is empty.</div>`;
+      } else {
+        emailList.innerHTML = emails.map(e => `
+          <div class="email-item ${e.isUnread ? 'unread' : ''}" data-id="${e.id}" data-thread="${e.threadId}">
+            <div class="email-item-date">${formatDate(e.date)}</div>
+            <div class="email-item-from">${e.isUnread ? '<span class="unread-dot"></span>' : ''}${escHtml(shortFrom(e.from))}</div>
+            <div class="email-item-subject">${escHtml(e.subject)}</div>
+            <div class="email-item-snippet">${escHtml(e.snippet)}</div>
+          </div>`).join("");
+        emailList.querySelectorAll(".email-item").forEach(el => {
+          el.addEventListener("click", () => openEmail(el.dataset.id, emails));
+        });
+      }
+    } catch (e) {
+      emailList.innerHTML = `<div style="padding:20px;color:#f87171;font-size:13px;">Error: ${e.message}</div>`;
+    }
+  }
+
+  loadInbox();
+
+  // ── Open email ────────────────────────────────────────────────────────────
+  async function openEmail(emailId, emailsMeta) {
+    currentEmailId = emailId;
+    document.querySelectorAll(".email-item").forEach(el => el.classList.toggle("active", el.dataset.id === emailId));
+    document.getElementById("emptyState").style.display = "none";
+    document.getElementById("emailDetail").classList.add("visible");
+    document.getElementById("topbarActions").style.display = "flex";
+    document.getElementById("detailBody").textContent = "Loading…";
+
+    const meta = emailsMeta.find(e => e.id === emailId);
+    if (meta) {
+      document.getElementById("detailSubject").textContent = meta.subject;
+      document.getElementById("detailFrom").textContent = meta.from;
+      document.getElementById("detailTo").textContent = meta.to;
+      document.getElementById("detailDate").textContent = meta.date;
+      document.getElementById("topbarTitle").textContent = meta.subject || "Email";
+    }
+
+    // Load full body
+    const res = await apiFetch(`/api/integrations/gmail/message/${emailId}`);
+    if (res.ok) {
+      const { message } = await res.json();
+      currentEmail = message;
+      document.getElementById("detailBody").textContent = message.body || message.snippet || "(no content)";
+      document.getElementById("detailFrom").textContent = message.from;
+      document.getElementById("detailTo").textContent = message.to;
+      document.getElementById("detailDate").textContent = message.date;
+    }
+  }
+
+  // ── Reply button ──────────────────────────────────────────────────────────
+  document.getElementById("replyBtn").addEventListener("click", () => {
+    if (!currentEmail) return;
+    document.getElementById("composeTo").value    = currentEmail.from;
+    document.getElementById("composeSubject").value = `Re: ${currentEmail.subject}`;
+    document.getElementById("composeBody").value  = `\n\n--- Original message ---\nFrom: ${currentEmail.from}\n${currentEmail.body}`;
+    document.getElementById("composeTitle").textContent = "Reply";
+    document.getElementById("composeOverlay").classList.add("open");
+  });
+
+  document.getElementById("forwardBtn").addEventListener("click", () => {
+    if (!currentEmail) return;
+    document.getElementById("composeTo").value    = "";
+    document.getElementById("composeSubject").value = `Fwd: ${currentEmail.subject}`;
+    document.getElementById("composeBody").value  = `\n\n--- Forwarded message ---\nFrom: ${currentEmail.from}\nSubject: ${currentEmail.subject}\n\n${currentEmail.body}`;
+    document.getElementById("composeTitle").textContent = "Forward";
+    document.getElementById("composeOverlay").classList.add("open");
+  });
+
+  // ── AI buttons ────────────────────────────────────────────────────────────
+  document.getElementById("aiSummarizeBtn").addEventListener("click", () => {
+    openAiPanel("Summarize this email in 3 bullet points.");
+  });
+  document.getElementById("aiDraftReplyBtn").addEventListener("click", () => {
+    openAiPanel("Write a professional reply to this email.");
+  });
+  document.getElementById("aiActionItemsBtn").addEventListener("click", () => {
+    openAiPanel("Extract all action items and next steps from this email.");
+  });
+
+  function openAiPanel(prefilledMessage) {
+    document.getElementById("aiPanel").style.display = "flex";
+    document.getElementById("aiPanel").style.flexDirection = "column";
+    if (prefilledMessage) {
+      document.getElementById("aiInput").value = prefilledMessage;
+      askAI();
+    }
+  }
+
+  document.getElementById("closeAiPanel").addEventListener("click", () => {
+    document.getElementById("aiPanel").style.display = "none";
+  });
+
+  document.getElementById("aiSendBtn").addEventListener("click", askAI);
+  document.getElementById("aiInput").addEventListener("keydown", e => {
+    if (e.key === "Enter") askAI();
+  });
+
+  async function askAI() {
+    const input = document.getElementById("aiInput");
+    const msg   = input.value.trim();
+    if (!msg) return;
+    input.value = "";
+
+    const messagesEl = document.getElementById("aiMessages");
+    messagesEl.innerHTML += `<div class="gmail-ai-msg user-msg">You: ${escHtml(msg)}</div>`;
+
+    const aiMsgEl = document.createElement("div");
+    aiMsgEl.className = "gmail-ai-msg ai-msg";
+    aiMsgEl.textContent = "🤖 ";
+    messagesEl.appendChild(aiMsgEl);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+
+    const res = await fetch("/api/integrations/gmail/ask", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${getToken()}` },
+      body: JSON.stringify({ message: msg, emailId: currentEmailId }),
+    });
+
+    if (!res.ok) { aiMsgEl.textContent = "🤖 Error: could not get AI response."; return; }
+
+    const reader  = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let content = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+      for (const line of lines) {
+        if (!line.startsWith("data: ")) continue;
+        const data = line.slice(6).trim();
+        if (data === "[DONE]") break;
+        try {
+          const d = JSON.parse(data);
+          if (d.delta) { content += d.delta; aiMsgEl.textContent = "🤖 " + content; messagesEl.scrollTop = messagesEl.scrollHeight; }
+        } catch {}
+      }
+    }
+  }
+
+  // ── Compose / Send ────────────────────────────────────────────────────────
+  document.getElementById("composeBtn").addEventListener("click", () => {
+    document.getElementById("composeTo").value = "";
+    document.getElementById("composeSubject").value = "";
+    document.getElementById("composeBody").value = "";
+    document.getElementById("composeTitle").textContent = "Compose Email";
+    document.getElementById("aiComposePrompt").value = "";
+    document.getElementById("aiComposeStatus").style.display = "none";
+    document.getElementById("aiComposeSection").style.display = "block";
+    document.getElementById("sendResult").style.display = "none";
+    document.getElementById("composeOverlay").classList.add("open");
+  });
+
+  // ── AI Compose ─────────────────────────────────────────────────────────────
+  document.getElementById("aiComposeBtn").addEventListener("click", async () => {
+    const prompt = document.getElementById("aiComposePrompt").value.trim();
+    if (!prompt) return;
+
+    const btn    = document.getElementById("aiComposeBtn");
+    const status = document.getElementById("aiComposeStatus");
+    document.getElementById("aiComposeBtnText").textContent = "Generating…";
+    btn.disabled = true;
+    status.style.display = "block";
+    status.textContent = "AI is writing your email…";
+
+    try {
+      const res = await fetch("/api/integrations/gmail/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${getToken()}` },
+        body: JSON.stringify({
+          message: `Write a complete email based on this request: "${prompt}"\n\nRespond in this exact format:\nSUBJECT: <subject line here>\n\nBODY:\n<email body here>\n\nDo not include any explanation, just the subject and body in that format.`
+        }),
+      });
+
+      if (!res.ok) { status.textContent = "AI error — try again."; return; }
+
+      const reader  = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let fullText = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          const data = line.slice(6).trim();
+          if (data === "[DONE]") break;
+          try { const d = JSON.parse(data); if (d.delta) fullText += d.delta; } catch {}
+        }
+      }
+
+      // Parse subject and body from AI response
+      const subjectMatch = fullText.match(/SUBJECT:\s*(.+)/i);
+      const bodyMatch    = fullText.match(/BODY:\s*([\s\S]+)/i);
+
+      if (subjectMatch) document.getElementById("composeSubject").value = subjectMatch[1].trim();
+      if (bodyMatch)    document.getElementById("composeBody").value    = bodyMatch[1].trim();
+
+      if (!subjectMatch && !bodyMatch) {
+        // Fallback: put full text in body
+        document.getElementById("composeBody").value = fullText.trim();
+      }
+
+      status.style.color = "#4ade80";
+      status.textContent = "✓ Email drafted — review and edit before sending.";
+    } catch (e) {
+      status.textContent = "Error: " + e.message;
+    } finally {
+      document.getElementById("aiComposeBtnText").textContent = "✨ Generate";
+      btn.disabled = false;
+    }
+  });
+
+  document.getElementById("aiComposePrompt").addEventListener("keydown", e => {
+    if (e.key === "Enter") document.getElementById("aiComposeBtn").click();
+  });
+  document.getElementById("closeCompose").addEventListener("click", () => {
+    document.getElementById("composeOverlay").classList.remove("open");
+  });
+
+  document.getElementById("sendEmailBtn").addEventListener("click", async () => {
+    const to      = document.getElementById("composeTo").value.trim();
+    const subject = document.getElementById("composeSubject").value.trim();
+    const body    = document.getElementById("composeBody").value.trim();
+    if (!to || !subject || !body) { alert("Please fill in all fields."); return; }
+
+    document.getElementById("sendBtnText").textContent = "Sending…";
+    document.getElementById("sendSpinner").style.display = "inline-block";
+    document.getElementById("sendEmailBtn").disabled = true;
+
+    const res = await apiFetch("/api/integrations/gmail/send", {
+      method: "POST",
+      body: JSON.stringify({ to, subject, body,
+        replyToMsgId: currentEmail?.id, threadId: currentEmail?.threadId }),
+    });
+
+    document.getElementById("sendBtnText").textContent = "Send Email";
+    document.getElementById("sendSpinner").style.display = "none";
+    document.getElementById("sendEmailBtn").disabled = false;
+
+    const result = document.getElementById("sendResult");
+    result.style.display = "block";
+    if (res.ok) {
+      result.style.color = "#4ade80";
+      result.textContent = "✓ Email sent successfully!";
+      setTimeout(() => document.getElementById("composeOverlay").classList.remove("open"), 1500);
+    } else {
+      const err = await res.json();
+      result.style.color = "#f87171";
+      result.textContent = "✗ " + (err.error || "Failed to send");
+    }
+  });
+
+  document.getElementById("saveDraftBtn").addEventListener("click", async () => {
+    const to      = document.getElementById("composeTo").value.trim();
+    const subject = document.getElementById("composeSubject").value.trim();
+    const body    = document.getElementById("composeBody").value.trim();
+    if (!to || !subject || !body) { alert("Please fill in all fields."); return; }
+
+    const res = await apiFetch("/api/integrations/gmail/draft", {
+      method: "POST", body: JSON.stringify({ to, subject, body }),
+    });
+    const result = document.getElementById("sendResult");
+    result.style.display = "block";
+    if (res.ok) {
+      result.style.color = "#4ade80";
+      result.textContent = "✓ Draft saved to Gmail!";
+    } else {
+      result.style.color = "#f87171";
+      result.textContent = "✗ Failed to save draft";
+    }
+  });
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  function escHtml(s) {
+    return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+  function shortFrom(from) {
+    const match = from?.match(/^"?([^"<]+)"?\s*<?/);
+    return match?.[1]?.trim() || from || "Unknown";
+  }
+  function formatDate(dateStr) {
+    try {
+      const d = new Date(dateStr);
+      const now = new Date();
+      if (d.toDateString() === now.toDateString()) return d.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+      return d.toLocaleDateString([],{month:"short",day:"numeric"});
+    } catch { return ""; }
+  }
+</script>
+</body>
+</html>

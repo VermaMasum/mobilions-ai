@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Power-Ups — Mobilions AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/app-styles.css" />
+  <link rel="stylesheet" href="/app-extended.css" />
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- Navbar -->
+  <nav class="app-nav">
+    <a href="/dashboard" class="app-nav-logo">
+      <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
+        <circle cx="14" cy="14" r="14" fill="url(#navLg2)"/>
+        <path d="M8 19L14 9L20 19" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="14" cy="9" r="2" fill="white"/>
+        <defs><linearGradient id="navLg2" x1="0" y1="0" x2="28" y2="28"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs>
+      </svg>
+      <span class="app-nav-logo-text">Mobilions<span class="app-nav-logo-ai"> AI</span></span>
+    </a>
+    <div class="app-nav-links">
+      <a href="/dashboard" class="nav-link">Agents</a>
+      <a href="/power-ups" class="nav-link nav-link--active">Power-Ups</a>
+      <a href="/brain" class="nav-link">Brain AI</a>
+      <a href="/integrations" class="nav-link">Integrations</a>
+    </div>
+    <div class="app-nav-right">
+      <div class="app-nav-user">
+        <div class="user-avatar" id="userAvatar">U</div>
+        <span class="user-name" id="userName">Loading…</span>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="logoutBtn">Log out</button>
+    </div>
+  </nav>
+
+  <!-- Layout -->
+  <div class="powerup-layout">
+
+    <!-- Sidebar filter -->
+    <aside class="powerup-sidebar">
+      <div class="powerup-sidebar-title">Categories</div>
+      <div class="category-filter" id="categoryFilter">
+        <button class="cat-btn cat-btn--active" data-cat="all">⚡ All Power-Ups</button>
+        <button class="cat-btn" data-cat="content">📝 Content Writing</button>
+        <button class="cat-btn" data-cat="social">📱 Social Media</button>
+        <button class="cat-btn" data-cat="sales">🎯 Sales</button>
+        <button class="cat-btn" data-cat="marketing">📊 Marketing</button>
+        <button class="cat-btn" data-cat="support">💬 Customer Support</button>
+        <button class="cat-btn" data-cat="seo">🔍 SEO</button>
+        <button class="cat-btn" data-cat="business">🧩 Business Strategy</button>
+        <button class="cat-btn" data-cat="hr">🎓 HR & Recruiting</button>
+      </div>
+      <div class="powerup-sidebar-footer">
+        <div class="powerup-count" id="powerupCount">Loading…</div>
+        <p>Input your details → AI generates output instantly</p>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="powerup-main">
+      <div class="powerup-hero">
+        <div>
+          <h1>⚡ Power-Ups</h1>
+          <p>40+ instant task tools. Fill a form, get expert AI output in seconds.</p>
+        </div>
+        <div class="powerup-search-wrap">
+          <input type="text" id="searchInput" class="powerup-search" placeholder="Search power-ups…" />
+        </div>
+      </div>
+
+      <div class="powerup-grid" id="powerupGrid">
+        <div class="pu-loading">Loading power-ups…</div>
+      </div>
+    </main>
+
+    <!-- Run panel (right slide-in) -->
+    <div class="powerup-panel-overlay" id="panelOverlay"></div>
+    <aside class="powerup-panel" id="powerupPanel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-emoji" id="panelEmoji">⚡</div>
+          <div>
+            <div class="panel-name" id="panelName">Power-Up</div>
+            <div class="panel-desc" id="panelDesc"></div>
+          </div>
+        </div>
+        <button class="panel-close" id="panelClose" aria-label="Close">✕</button>
+      </div>
+
+      <div class="panel-body">
+        <form id="powerupForm" class="panel-form"></form>
+
+        <button class="btn btn-primary panel-generate-btn" id="generateBtn">
+          <span id="generateBtnText">Generate</span>
+          <div class="spinner" id="generateSpinner" style="display:none"></div>
+        </button>
+
+        <div class="panel-output-wrap" id="outputWrap" style="display:none">
+          <div class="panel-output-header">
+            <span class="panel-output-label">Output</span>
+            <button class="btn btn-ghost btn-sm" id="copyBtn">📋 Copy</button>
+          </div>
+          <div class="panel-output" id="outputArea"></div>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+</div>
+
+<script type="module">
+  import { requireAuth, getUser, getToken, clearSession, getInitials, apiFetch } from "/auth.js";
+  if (!requireAuth()) throw new Error("not authed");
+
+  const user = getUser();
+  document.getElementById("userName").textContent = user?.name || "User";
+  document.getElementById("userAvatar").textContent = getInitials(user?.name || "U");
+  document.getElementById("logoutBtn").addEventListener("click", () => {
+    clearSession(); window.location.href = "/login";
+  });
+
+  // ── Load power-ups ──────────────────────────────────────────────────────
+  let allPowerups = [];
+  let currentCat  = "all";
+  let currentSearch = "";
+
+  const res = await apiFetch("/api/powerups");
+  const { powerups } = await res.json();
+  allPowerups = powerups;
+  renderGrid();
+
+  document.getElementById("powerupCount").textContent = `${allPowerups.length} power-ups`;
+
+  // ── Category filter ──────────────────────────────────────────────────────
+  document.getElementById("categoryFilter").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-cat]");
+    if (!btn) return;
+    document.querySelectorAll(".cat-btn").forEach(b => b.classList.remove("cat-btn--active"));
+    btn.classList.add("cat-btn--active");
+    currentCat = btn.dataset.cat;
+    renderGrid();
+  });
+
+  // ── Search ───────────────────────────────────────────────────────────────
+  document.getElementById("searchInput").addEventListener("input", (e) => {
+    currentSearch = e.target.value.toLowerCase();
+    renderGrid();
+  });
+
+  function renderGrid() {
+    const grid = document.getElementById("powerupGrid");
+    const filtered = allPowerups.filter(p => {
+      const matchCat = currentCat === "all" || p.category === currentCat;
+      const matchSearch = !currentSearch || p.name.toLowerCase().includes(currentSearch) || p.description.toLowerCase().includes(currentSearch) || p.categoryLabel.toLowerCase().includes(currentSearch);
+      return matchCat && matchSearch;
+    });
+
+    if (!filtered.length) {
+      grid.innerHTML = `<div class="pu-empty">No power-ups found for that filter.</div>`;
+      return;
+    }
+
+    grid.innerHTML = filtered.map(p => `
+      <div class="powerup-card" data-id="${p.id}">
+        <div class="pu-card-top">
+          <div class="pu-emoji">${p.emoji}</div>
+          <span class="pu-category-badge">${p.categoryLabel}</span>
+        </div>
+        <div class="pu-name">${p.name}</div>
+        <div class="pu-desc">${p.description}</div>
+        <div class="pu-footer">
+          <span class="pu-agent">by ${getAgentName(p.agentId)}</span>
+          <button class="pu-run-btn" data-id="${p.id}">Run →</button>
+        </div>
+      </div>
+    `).join("");
+
+    grid.querySelectorAll(".pu-run-btn").forEach(btn => {
+      btn.addEventListener("click", () => openPanel(btn.dataset.id));
+    });
+  }
+
+  function getAgentName(id) {
+    const names = { aria:"Aria", velo:"Velo", kira:"Kira", dex:"Dex", luma:"Luma", coda:"Coda", nexus:"Nexus", scout:"Scout", mailo:"Mailo", zeno:"Zeno", flow:"Flow", bloom:"Bloom" };
+    return names[id] || id;
+  }
+
+  // ── Panel logic ──────────────────────────────────────────────────────────
+  let activePowerup = null;
+  let outputText    = "";
+
+  function openPanel(puId) {
+    const pu = allPowerups.find(p => p.id === puId);
+    if (!pu) return;
+    activePowerup = pu;
+    outputText = "";
+
+    document.getElementById("panelEmoji").textContent = pu.emoji;
+    document.getElementById("panelName").textContent  = pu.name;
+    document.getElementById("panelDesc").textContent  = pu.description;
+
+    // Build form
+    const form = document.getElementById("powerupForm");
+    form.innerHTML = pu.fields.map(f => {
+      if (f.type === "select") {
+        const opts = f.options.map(o => `<option value="${o}"${o === f.defaultVal ? " selected" : ""}>${o}</option>`).join("");
+        return `<div class="form-group">
+          <label class="form-label">${f.label}${f.required ? " *" : ""}</label>
+          <select class="form-input" id="field_${f.id}" name="${f.id}">${opts}</select>
+        </div>`;
+      }
+      if (f.type === "textarea") {
+        return `<div class="form-group">
+          <label class="form-label">${f.label}${f.required ? " *" : ""}</label>
+          <textarea class="form-input panel-textarea" id="field_${f.id}" name="${f.id}" placeholder="${f.placeholder || ""}" rows="4"></textarea>
+        </div>`;
+      }
+      return `<div class="form-group">
+        <label class="form-label">${f.label}${f.required ? " *" : ""}</label>
+        <input type="text" class="form-input" id="field_${f.id}" name="${f.id}" placeholder="${f.placeholder || ""}" />
+      </div>`;
+    }).join("");
+
+    // Reset output
+    document.getElementById("outputWrap").style.display = "none";
+    document.getElementById("outputArea").textContent = "";
+    document.getElementById("generateBtnText").textContent = "Generate";
+    document.getElementById("generateSpinner").style.display = "none";
+    document.getElementById("generateBtn").disabled = false;
+
+    // Show panel
+    document.getElementById("powerupPanel").classList.add("panel--open");
+    document.getElementById("panelOverlay").classList.add("overlay--open");
+  }
+
+  function closePanel() {
+    document.getElementById("powerupPanel").classList.remove("panel--open");
+    document.getElementById("panelOverlay").classList.remove("overlay--open");
+  }
+
+  document.getElementById("panelClose").addEventListener("click", closePanel);
+  document.getElementById("panelOverlay").addEventListener("click", closePanel);
+
+  // ── Generate ─────────────────────────────────────────────────────────────
+  document.getElementById("generateBtn").addEventListener("click", async () => {
+    if (!activePowerup) return;
+
+    // Collect field values
+    const fields = {};
+    let valid = true;
+    for (const f of activePowerup.fields) {
+      const el = document.getElementById(`field_${f.id}`);
+      if (!el) continue;
+      const val = el.value.trim();
+      if (f.required && !val) {
+        el.style.borderColor = "#ef4444";
+        el.focus();
+        valid = false;
+        setTimeout(() => { el.style.borderColor = ""; }, 2000);
+        break;
+      }
+      fields[f.id] = val || f.defaultVal || "";
+    }
+    if (!valid) return;
+
+    const btn     = document.getElementById("generateBtn");
+    const spinner = document.getElementById("generateSpinner");
+    const btnText = document.getElementById("generateBtnText");
+    const outWrap = document.getElementById("outputWrap");
+    const outArea = document.getElementById("outputArea");
+
+    btn.disabled    = true;
+    btnText.textContent = "Generating…";
+    spinner.style.display = "";
+    outWrap.style.display = "block";
+    outArea.textContent = "";
+    outputText = "";
+
+    try {
+      const response = await fetch(`/api/powerups/${activePowerup.id}/run`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${getToken()}` },
+        body: JSON.stringify(fields),
+      });
+
+      if (!response.ok) {
+        outArea.textContent = "Error: " + (await response.json().catch(() => ({})).error || response.statusText);
+        return;
+      }
+
+      const reader  = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer    = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          const data = line.slice(6).trim();
+          if (data === "[DONE]") break;
+          try {
+            const parsed = JSON.parse(data);
+            if (parsed.error) { outArea.textContent += `\n\nError: ${parsed.error}`; break; }
+            if (parsed.delta) {
+              outputText += parsed.delta;
+              outArea.textContent = outputText;
+              outArea.scrollTop = outArea.scrollHeight;
+            }
+          } catch { /* ignore */ }
+        }
+      }
+    } catch (err) {
+      outArea.textContent = "Connection error. Please try again.";
+    } finally {
+      btn.disabled = false;
+      btnText.textContent = "Regenerate";
+      spinner.style.display = "none";
+    }
+  });
+
+  // ── Copy ─────────────────────────────────────────────────────────────────
+  document.getElementById("copyBtn").addEventListener("click", async () => {
+    if (!outputText) return;
+    try {
+      await navigator.clipboard.writeText(outputText);
+      const btn = document.getElementById("copyBtn");
+      btn.textContent = "✓ Copied!";
+      setTimeout(() => { btn.textContent = "📋 Copy"; }, 2000);
+    } catch {
+      const btn = document.getElementById("copyBtn");
+      btn.textContent = "Select + copy manually";
+      setTimeout(() => { btn.textContent = "📋 Copy"; }, 2000);
+    }
+  });
+</script>
+</body>
+</html>
