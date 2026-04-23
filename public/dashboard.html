@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Dashboard — Mobilions AI</title>
+  <title>Home — Mobilions AI</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/app-styles.css" />
@@ -23,10 +23,11 @@
       <span class="app-nav-logo-text">Mobilions<span class="app-nav-logo-ai"> AI</span></span>
     </a>
     <div class="app-nav-links">
-      <a href="/dashboard" class="nav-link nav-link--active">Agents</a>
+      <a href="/dashboard" class="nav-link nav-link--active">Home</a>
+      <a href="/integrations" class="nav-link">Integrations</a>
+      <a href="/agents" class="nav-link">AI Agents</a>
       <a href="/power-ups" class="nav-link">Power-Ups</a>
       <a href="/brain" class="nav-link">Brain AI</a>
-      <a href="/integrations" class="nav-link">Integrations</a>
     </div>
     <div class="app-nav-right">
       <div class="app-nav-user">
@@ -39,14 +40,24 @@
 
   <!-- Body -->
   <main class="dashboard-body">
+
+    <!-- Hero -->
     <div class="dashboard-hero">
-      <h1>Your AI Team 👋</h1>
-      <p>12 specialist agents ready to work. Pick one and start a conversation.</p>
+      <h1>Welcome to Mobilions AI 👋</h1>
+      <p>Connect your tools, deploy AI agents, and automate your entire workflow.</p>
     </div>
 
-    <!-- Products grid -->
+    <!-- Products grid: Integrations → AI Agents → Power-Ups → Brain AI -->
     <div class="products-grid">
-      <a href="/dashboard#agents" class="product-card">
+      <a href="/integrations" class="product-card">
+        <div class="product-card-icon" style="background:linear-gradient(135deg,#10b981,#22c55e)">🔗</div>
+        <div class="product-card-body">
+          <div class="product-card-title">Integrations</div>
+          <div class="product-card-desc">Connect Gmail, Slack, Notion, and 20+ more tools to your AI team.</div>
+        </div>
+        <div class="product-card-arrow">→</div>
+      </a>
+      <a href="/agents" class="product-card">
         <div class="product-card-icon" style="background:linear-gradient(135deg,#6366f1,#a855f7)">🤖</div>
         <div class="product-card-body">
           <div class="product-card-title">AI Agents</div>
@@ -70,30 +81,52 @@
         </div>
         <div class="product-card-arrow">→</div>
       </a>
-      <a href="/integrations" class="product-card">
-        <div class="product-card-icon" style="background:linear-gradient(135deg,#10b981,#22c55e)">🔗</div>
-        <div class="product-card-body">
-          <div class="product-card-title">Integrations</div>
-          <div class="product-card-desc">Connect Gmail, Slack, Notion, and 20+ more tools to your AI team.</div>
-        </div>
-        <div class="product-card-arrow">→</div>
-      </a>
     </div>
 
-    <!-- Agents grid -->
-    <div class="dashboard-agents-header" id="agents">
-      <h2>Your AI Agents</h2>
-      <p>12 specialists, one team. Click any agent to start chatting.</p>
-    </div>
-    <div class="agents-grid" id="agentsGrid">
-      <div style="color:#475569;font-size:14px;padding:20px;">Loading agents…</div>
+    <!-- Integrations Section -->
+    <div class="integrations-hero">
+      <div>
+        <div class="integrations-hero-badge">🔗 Integrations</div>
+        <h1>Connect Your Entire Stack</h1>
+        <p>Mobilions AI works seamlessly with 25+ tools you already use. Connect once, automate forever.</p>
+      </div>
+      <div class="integrations-stats">
+        <div class="int-stat"><span class="int-stat-num">25+</span><span class="int-stat-label">Integrations</span></div>
+        <div class="int-stat"><span class="int-stat-num">0</span><span class="int-stat-label">Setup time</span></div>
+        <div class="int-stat"><span class="int-stat-num">∞</span><span class="int-stat-label">Possibilities</span></div>
+      </div>
     </div>
 
-    <!-- Recent conversations -->
-    <section class="recent-section" id="recentSection" style="display:none;">
-      <h2>Recent Conversations</h2>
-      <div class="recent-grid" id="recentGrid"></div>
-    </section>
+    <!-- Connected row -->
+    <div id="connectedRow" style="display:none;margin-bottom:28px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;">Connected</div>
+      <div id="connectedChips" style="display:flex;flex-wrap:wrap;gap:10px;"></div>
+    </div>
+
+    <!-- Category filter -->
+    <div class="category-filter integrations-filter" id="intFilter">
+      <button class="cat-btn cat-btn--active" data-cat="all">All</button>
+      <button class="cat-btn" data-cat="productivity">Productivity</button>
+      <button class="cat-btn" data-cat="social">Social Media</button>
+      <button class="cat-btn" data-cat="analytics">Analytics</button>
+      <button class="cat-btn" data-cat="crm">CRM & Sales</button>
+      <button class="cat-btn" data-cat="communication">Communication</button>
+      <button class="cat-btn" data-cat="ecommerce">eCommerce</button>
+      <button class="cat-btn" data-cat="email">Email</button>
+    </div>
+
+    <!-- Integrations grid -->
+    <div class="integrations-grid" id="intGrid"></div>
+
+    <!-- Coming soon -->
+    <div class="int-coming-soon">
+      <div class="int-coming-icon">🚀</div>
+      <div>
+        <strong>More integrations coming soon</strong>
+        <p>We're building native integrations with your favourite tools. Have a request? <a href="mailto:hello@mobilions.ai">Let us know</a>.</p>
+      </div>
+    </div>
+
   </main>
 </div>
 
@@ -104,70 +137,160 @@
   const user = getUser();
   document.getElementById("userName").textContent = user?.name || "User";
   document.getElementById("userAvatar").textContent = getInitials(user?.name || "U");
-
   document.getElementById("logoutBtn").addEventListener("click", () => {
     clearSession(); window.location.href = "/login";
   });
 
-  // Load agents + conversations in parallel
-  const [agentsRes, convsRes] = await Promise.all([
-    apiFetch("/api/agents"),
-    apiFetch("/api/conversations"),
-  ]);
+  const INTEGRATIONS = [
+    { id: "gmail",      name: "Gmail",             emoji: "📧", cat: "productivity",  desc: "Send emails, manage your inbox, and draft responses with AI assistance.",                 comingSoon: false },
+    { id: "gcal",       name: "Google Calendar",   emoji: "📅", cat: "productivity",  desc: "Schedule meetings, create events, and manage your calendar through AI.",                  comingSoon: false },
+    { id: "gdrive",     name: "Google Drive",      emoji: "📁", cat: "productivity",  desc: "Create, read, and organize documents and files directly from Mobilions AI.",             comingSoon: false },
+    { id: "notion",     name: "Notion",            emoji: "📓", cat: "productivity",  desc: "Create pages, update databases, and manage your Notion workspace with AI.",              comingSoon: false },
+    { id: "slack",      name: "Slack",             emoji: "💬", cat: "communication", desc: "Send messages, create channels, and automate Slack workflows with AI.",                 comingSoon: false },
+    { id: "linkedin",   name: "LinkedIn",          emoji: "💼", cat: "social",        desc: "Post content, send messages, and manage your LinkedIn presence with AI.",                comingSoon: false },
+    { id: "instagram",  name: "Instagram",         emoji: "📸", cat: "social",        desc: "Schedule posts, generate captions, and analyze performance data.",                      comingSoon: false },
+    { id: "twitter",    name: "Twitter / X",       emoji: "🐦", cat: "social",        desc: "Tweet, schedule threads, reply to mentions, and grow your audience.",                   comingSoon: false },
+    { id: "facebook",   name: "Facebook",          emoji: "📘", cat: "social",        desc: "Post to pages, respond to comments, and manage your Facebook presence.",                comingSoon: true  },
+    { id: "youtube",    name: "YouTube",           emoji: "🎬", cat: "social",        desc: "Upload videos, optimize titles/descriptions, and manage your YouTube channel.",         comingSoon: true  },
+    { id: "discord",    name: "Discord",           emoji: "🎮", cat: "communication", desc: "Send messages, manage servers, and automate community interactions.",                    comingSoon: true  },
+    { id: "ga",         name: "Google Analytics",  emoji: "📊", cat: "analytics",     desc: "Query your analytics data, generate reports, and get AI-powered insights.",            comingSoon: false },
+    { id: "salesforce", name: "Salesforce",        emoji: "☁️", cat: "crm",           desc: "Update records, create reports, and manage opportunities in Salesforce.",               comingSoon: false },
+    { id: "whatsapp",   name: "WhatsApp Business", emoji: "📱", cat: "communication", desc: "Send WhatsApp messages, manage templates, and automate customer communications.",       comingSoon: true  },
+    { id: "shopify",    name: "Shopify",           emoji: "🛍️", cat: "ecommerce",     desc: "Manage products, write descriptions, track orders, and optimize your store.",          comingSoon: false },
+    { id: "stripe",     name: "Stripe",            emoji: "💳", cat: "ecommerce",     desc: "Query payments, manage subscriptions, and get revenue analytics.",                      comingSoon: true  },
+  ];
 
-  const { agents } = await agentsRes.json();
-  const { conversations } = await convsRes.json();
+  const REAL_INTEGRATIONS = {
+    gmail:    { connectUrl: "/api/integrations/gmail/connect",    disconnectUrl: "/api/integrations/gmail",    openUrl: "/gmail"    },
+    gcal:     { connectUrl: "/api/integrations/gcal/connect",     disconnectUrl: "/api/integrations/gcal",     openUrl: "/gcal"     },
+    gdrive:   { connectUrl: "/api/integrations/gdrive/connect",   disconnectUrl: "/api/integrations/gdrive",   openUrl: "/gdrive"   },
+    notion:   { connectUrl: "/api/integrations/notion/connect",   disconnectUrl: "/api/integrations/notion",   openUrl: "/notion"   },
+    slack:    { connectUrl: "/api/integrations/slack/connect",    disconnectUrl: "/api/integrations/slack",    openUrl: "/slack"    },
+    linkedin: { connectUrl: "/api/integrations/linkedin/connect", disconnectUrl: "/api/integrations/linkedin", openUrl: "/linkedin" },
+  };
 
-  // Map conversations by agentId
-  const convMap = {};
-  conversations.forEach(c => convMap[c.agentId] = c);
+  let currentCat = "all";
+  const realConnected = {};
 
-  // Render agent grid
-  const grid = document.getElementById("agentsGrid");
-  grid.innerHTML = agents.map(agent => {
-    const conv = convMap[agent.id];
-    const hasConvo = conv && conv.messageCount > 0;
-    return `
-    <a href="/chat?agent=${agent.id}" class="agent-card" style="--glow-color:${agent.color}40">
-      <div class="agent-card-glow"></div>
-      <div class="agent-card-header">
-        <div class="agent-avatar" style="background:${agent.gradient}">${agent.emoji}</div>
-        <div>
-          <div class="agent-tag" style="background:${agent.tagBg};color:${agent.tagColor}">${agent.role.replace("AI ","")}</div>
-          ${hasConvo ? `<div class="has-convo-badge" style="margin-top:4px"><div class="has-convo-dot"></div>${conv.messageCount / 2 | 0} chats</div>` : ""}
-        </div>
-      </div>
-      <div class="agent-name">${agent.name}</div>
-      <div class="agent-role">${agent.role}</div>
-      <div class="agent-desc">${agent.description}</div>
-      <div class="agent-caps">
-        ${agent.capabilities.slice(0,3).map(c => `<span class="agent-cap">${c}</span>`).join("")}
-      </div>
-      <div class="agent-chat-btn">Chat with ${agent.name} →</div>
-    </a>`;
-  }).join("");
+  async function loadConnected() {
+    try {
+      const res = await apiFetch("/api/integrations");
+      if (res && res.ok) {
+        const data = await res.json();
+        (data.integrations || []).forEach(i => {
+          realConnected[i.provider] = { email: i.email, connectedAt: i.createdAt };
+        });
+      }
+    } catch (e) { console.error("loadConnected error:", e); }
+    renderGrid();
+  }
 
-  // Render recent conversations
-  const recent = conversations.filter(c => c.messageCount > 0).slice(0, 6);
-  if (recent.length > 0) {
-    document.getElementById("recentSection").style.display = "block";
-    const rGrid = document.getElementById("recentGrid");
-    rGrid.innerHTML = recent.map(c => {
-      const agent = agents.find(a => a.id === c.agentId);
-      if (!agent) return "";
-      const lastMsg = c.lastMessage?.content || "No messages yet";
-      const truncated = lastMsg.length > 60 ? lastMsg.slice(0, 60) + "…" : lastMsg;
-      return `
-      <a href="/chat?agent=${agent.id}" class="recent-card">
-        <div class="recent-avatar" style="background:${agent.gradient}">${agent.emoji}</div>
-        <div class="recent-info">
-          <div class="recent-name">${agent.name} — ${agent.role.replace("AI ","")}</div>
-          <div class="recent-msg">${truncated}</div>
-        </div>
-        <span class="recent-count">${c.messageCount / 2 | 0} msgs</span>
+  const urlParams = new URLSearchParams(location.search);
+  const connectedParam = urlParams.get("connected");
+  if (connectedParam) {
+    history.replaceState({}, "", "/dashboard");
+    const names = { gmail:"Gmail", gcal:"Google Calendar", gdrive:"Google Drive", notion:"Notion", slack:"Slack", linkedin:"LinkedIn" };
+    setTimeout(() => showToast(`${names[connectedParam] || connectedParam} connected successfully!`, "success"), 300);
+  }
+  if (urlParams.get("error")) {
+    history.replaceState({}, "", "/dashboard");
+    setTimeout(() => showToast("Connection failed: " + urlParams.get("error"), "error"), 300);
+  }
+
+  function showToast(msg, type = "success") {
+    const t = document.createElement("div");
+    t.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:9999;padding:12px 20px;border-radius:10px;font-weight:600;font-size:14px;color:#fff;box-shadow:0 4px 20px rgba(0,0,0,.2);background:${type === "success" ? "#10b981" : "#ef4444"}`;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 4000);
+  }
+
+  function renderConnectedRow() {
+    const connected = INTEGRATIONS.filter(i => realConnected[i.id]);
+    const row   = document.getElementById("connectedRow");
+    const chips = document.getElementById("connectedChips");
+    if (!connected.length) { row.style.display = "none"; return; }
+    row.style.display = "block";
+    chips.innerHTML = connected.map(i => {
+      const openUrl = REAL_INTEGRATIONS[i.id]?.openUrl || "/integrations";
+      return `<a href="${openUrl}" style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:40px;background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.3);color:var(--text-1);font-size:13px;font-weight:600;text-decoration:none;transition:background .15s;" onmouseover="this.style.background='rgba(99,102,241,.22)'" onmouseout="this.style.background='rgba(99,102,241,.12)'">
+        <span style="font-size:16px;">${i.emoji}</span>${i.name}
+        <span style="width:7px;height:7px;border-radius:50%;background:#10b981;flex-shrink:0;"></span>
       </a>`;
     }).join("");
   }
+
+  function renderGrid() {
+    renderConnectedRow();
+    const grid = document.getElementById("intGrid");
+    const filtered = INTEGRATIONS.filter(i => currentCat === "all" || i.cat === currentCat);
+    grid.innerHTML = filtered.map(i => {
+      const conn = realConnected[i.id];
+      const isRealConnected = !!conn;
+      const isReal = !!REAL_INTEGRATIONS[i.id];
+      return `
+        <div class="integration-card ${i.comingSoon ? "int-card--soon" : ""}">
+          <div class="int-card-top">
+            <div class="int-emoji">${i.emoji}</div>
+            <div>${i.comingSoon ? '<span class="int-soon-badge">Coming Soon</span>' : (isRealConnected ? '<span class="int-connected-badge">✓ Connected</span>' : '')}</div>
+          </div>
+          <div class="int-name">${i.name}</div>
+          <div class="int-desc">${i.desc}</div>
+          ${isRealConnected && conn.email ? `<div style="font-size:12px;color:#6366f1;margin-top:4px;font-weight:500;">📧 ${conn.email}</div>` : ""}
+          <div class="int-footer">
+            <span class="int-cat-label">${catLabel(i.cat)}</span>
+            <div style="display:flex;gap:8px;">
+              ${i.comingSoon
+                ? `<button class="btn btn-outline btn-sm int-notify-btn" data-id="${i.id}">Notify me</button>`
+                : isRealConnected
+                  ? `${isReal ? `<a href="${REAL_INTEGRATIONS[i.id]?.openUrl || '/'+i.id}" class="btn btn-outline btn-sm">Open</a>` : ""}
+                     <button class="btn btn-danger btn-sm int-disconnect-btn" data-id="${i.id}">Disconnect</button>`
+                  : `<button class="btn btn-primary btn-sm int-connect-btn" data-id="${i.id}">Connect</button>`
+              }
+            </div>
+          </div>
+        </div>`;
+    }).join("");
+    grid.querySelectorAll(".int-connect-btn").forEach(btn => btn.addEventListener("click", () => handleConnect(btn.dataset.id)));
+    grid.querySelectorAll(".int-disconnect-btn").forEach(btn => btn.addEventListener("click", () => handleDisconnect(btn.dataset.id)));
+    grid.querySelectorAll(".int-notify-btn").forEach(btn => btn.addEventListener("click", () => { btn.textContent = "✓ Notified!"; btn.disabled = true; }));
+  }
+
+  async function handleConnect(id) {
+    const real = REAL_INTEGRATIONS[id];
+    if (real) { window.location.href = `${real.connectUrl}?token=${encodeURIComponent(getToken())}`; return; }
+    showToast(`${id} integration coming soon!`, "success");
+  }
+
+  async function handleDisconnect(id) {
+    const real = REAL_INTEGRATIONS[id];
+    if (real) {
+      try {
+        await apiFetch(real.disconnectUrl, { method: "DELETE" });
+        delete realConnected[id];
+        showToast(`${id} disconnected`, "success");
+        renderGrid();
+      } catch (err) { showToast("Failed to disconnect: " + err.message, "error"); }
+      return;
+    }
+    showToast(`${id} disconnected`, "success");
+  }
+
+  function catLabel(cat) {
+    const labels = { productivity:"Productivity", social:"Social Media", analytics:"Analytics", crm:"CRM & Sales", communication:"Communication", ecommerce:"eCommerce", email:"Email Marketing" };
+    return labels[cat] || cat;
+  }
+
+  document.getElementById("intFilter").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-cat]");
+    if (!btn) return;
+    document.querySelectorAll("#intFilter .cat-btn").forEach(b => b.classList.remove("cat-btn--active"));
+    btn.classList.add("cat-btn--active");
+    currentCat = btn.dataset.cat;
+    renderGrid();
+  });
+
+  loadConnected();
 </script>
 </body>
 </html>
