@@ -223,7 +223,9 @@ export async function createTicket(accessToken, databaseId, { title, status, pri
 export function getPageTitle(page) {
   if (!page?.properties) return page?.title?.[0]?.plain_text || "(Untitled)";
   const titleProp = Object.values(page.properties).find(p => p.type === "title");
-  return titleProp?.title?.map(t => t.plain_text).join("") || "(Untitled)";
+  return Array.isArray(titleProp?.title)
+    ? titleProp.title.map(t => t.plain_text).join("") || "(Untitled)"
+    : "(Untitled)";
 }
 
 export function getPageEmoji(page) {
