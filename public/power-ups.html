@@ -93,17 +93,22 @@
       </div>
 
       <div class="panel-body">
-        <form id="powerupForm" class="panel-form"></form>
+        <div class="panel-form-side">
+          <form id="powerupForm" class="panel-form"></form>
 
-        <button class="btn btn-primary panel-generate-btn" id="generateBtn">
-          <span id="generateBtnText">Generate</span>
-          <div class="spinner" id="generateSpinner" style="display:none"></div>
-        </button>
+          <button class="btn btn-primary panel-generate-btn" id="generateBtn">
+            <span id="generateBtnText">Generate</span>
+            <div class="spinner" id="generateSpinner" style="display:none"></div>
+          </button>
+        </div>
 
         <div class="panel-output-wrap" id="outputWrap" style="display:none">
           <div class="panel-output-header">
             <span class="panel-output-label">AI Output</span>
-            <button class="btn btn-ghost btn-sm" id="copyBtn">📋 Copy</button>
+            <button class="panel-copy-btn" id="copyBtn">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy
+            </button>
           </div>
           <div class="panel-output" id="outputArea"></div>
         </div>
@@ -273,6 +278,7 @@
     document.getElementById("generateBtnText").textContent = "Generate";
     document.getElementById("generateSpinner").style.display = "none";
     document.getElementById("generateBtn").disabled = false;
+    document.getElementById("powerupPanel").classList.remove("panel--wide");
 
     // Show panel
     document.getElementById("powerupPanel").classList.add("panel--open");
@@ -281,6 +287,7 @@
 
   function closePanel() {
     document.getElementById("powerupPanel").classList.remove("panel--open");
+    document.getElementById("powerupPanel").classList.remove("panel--wide");
     document.getElementById("panelOverlay").classList.remove("overlay--open");
   }
 
@@ -319,6 +326,7 @@
     btnText.textContent = "Generating…";
     spinner.style.display = "";
     outWrap.style.display = "block";
+    document.getElementById("powerupPanel").classList.add("panel--wide");
     outArea.textContent = "";
     outputText = "";
 
@@ -332,14 +340,25 @@
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        outArea.textContent = "Error: " + (data.error || response.statusText);
+        const msg = data.error || response.statusText;
+        if (response.status === 429 || msg.toLowerCase().includes("rate limit")) {
+          outArea.innerHTML = `<div style="color:#f87171">⚠️ Rate limit hit — please wait 30 seconds and try again.</div>`;
+        } else if (response.status === 401) {
+          outArea.innerHTML = `<div style="color:#f87171">⚠️ Session expired — please <a href="/login" style="color:#a5b4fc">log in again</a>.</div>`;
+        } else {
+          outArea.innerHTML = `<div style="color:#f87171">⚠️ Error: ${msg}</div>`;
+        }
         return;
       }
 
       outputText = data.result || "";
       outArea.innerHTML = formatOutput(outputText);
+      fixOutputHeight();
     } catch (err) {
-      outArea.textContent = "Connection error. Please try again.";
+      const isOffline = err.message === "Failed to fetch" || err.message === "fetch failed" || err.message === "Load failed";
+      outArea.innerHTML = isOffline
+        ? `<div style="color:#f87171">⚠️ Cannot reach server — please make sure the server is running on port 4000, then refresh.</div>`
+        : `<div style="color:#f87171">⚠️ ${err.message}</div>`;
     } finally {
       btn.disabled = false;
       btnText.textContent = "Regenerate";
@@ -347,18 +366,37 @@
     }
   });
 
+  // ── Fix output scroll height ──────────────────────────────────────────────
+  function fixOutputHeight() {
+    const panel      = document.getElementById("powerupPanel");
+    const panelHdr   = panel?.querySelector(".panel-header");
+    const outWrap    = document.getElementById("outputWrap");
+    const outHdr     = outWrap?.querySelector(".panel-output-header");
+    const outArea    = document.getElementById("outputArea");
+    if (!panel || !panelHdr || !outHdr || !outArea) return;
+    const available  = panel.clientHeight - panelHdr.clientHeight - outHdr.clientHeight;
+    outArea.style.height    = available + "px";
+    outArea.style.overflowY = "auto";
+  }
+  window.addEventListener("resize", fixOutputHeight);
+
   // ── Copy ─────────────────────────────────────────────────────────────────
   document.getElementById("copyBtn").addEventListener("click", async () => {
     if (!outputText) return;
+    const btn = document.getElementById("copyBtn");
     try {
       await navigator.clipboard.writeText(outputText);
-      const btn = document.getElementById("copyBtn");
-      btn.textContent = "✓ Copied!";
-      setTimeout(() => { btn.textContent = "📋 Copy"; }, 2000);
+      btn.classList.add("copied");
+      btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Copied!`;
+      setTimeout(() => {
+        btn.classList.remove("copied");
+        btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy`;
+      }, 2000);
     } catch {
-      const btn = document.getElementById("copyBtn");
-      btn.textContent = "Select + copy manually";
-      setTimeout(() => { btn.textContent = "📋 Copy"; }, 2000);
+      btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Select &amp; copy`;
+      setTimeout(() => {
+        btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy`;
+      }, 2000);
     }
   });
 </script>

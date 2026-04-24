@@ -216,15 +216,18 @@
       const conn = realConnected[i.id];
       const isRealConnected = !!conn;
       const isReal = !!REAL_INTEGRATIONS[i.id];
+      const isNotImplemented = !isReal && !isRealConnected;
 
       return `
-        <div class="integration-card ${i.comingSoon ? "int-card--soon" : ""}">
+        <div class="integration-card ${isNotImplemented ? "int-card--soon" : ""}">
           <div class="int-card-top">
             <div class="int-emoji">${i.emoji}</div>
             <div>
-              ${i.comingSoon
-                ? '<span class="int-soon-badge">Coming Soon</span>'
-                : (isRealConnected ? '<span class="int-connected-badge">✓ Connected</span>' : '')}
+              ${isRealConnected
+                ? '<span class="int-connected-badge">✓ Connected</span>'
+                : isNotImplemented
+                  ? '<span class="int-soon-badge">Coming Soon</span>'
+                  : ''}
             </div>
           </div>
           <div class="int-name">${i.name}</div>
@@ -233,12 +236,12 @@
           <div class="int-footer">
             <span class="int-cat-label">${catLabel(i.cat)}</span>
             <div style="display:flex;gap:8px;">
-              ${i.comingSoon
-                ? `<button class="btn btn-outline btn-sm int-notify-btn" data-id="${i.id}">Notify me</button>`
-                : isRealConnected
-                  ? `${isReal ? `<a href="${REAL_INTEGRATIONS[i.id]?.openUrl || '/' + i.id}" class="btn btn-outline btn-sm">Open</a>` : ""}
-                     <button class="btn btn-danger btn-sm int-disconnect-btn" data-id="${i.id}">Disconnect</button>`
-                  : `<button class="btn btn-primary btn-sm int-connect-btn" data-id="${i.id}">Connect</button>`
+              ${isRealConnected
+                ? `${isReal ? `<a href="${REAL_INTEGRATIONS[i.id]?.openUrl || '/' + i.id}" class="btn btn-outline btn-sm">Open</a>` : ""}
+                   <button class="btn btn-danger btn-sm int-disconnect-btn" data-id="${i.id}">Disconnect</button>`
+                : isReal
+                  ? `<button class="btn btn-primary btn-sm int-connect-btn" data-id="${i.id}">Connect</button>`
+                  : `<button class="btn btn-outline btn-sm int-notify-btn" data-id="${i.id}">🔔 Notify me</button>`
               }
             </div>
           </div>
@@ -253,7 +256,15 @@
       btn.addEventListener("click", () => handleDisconnect(btn.dataset.id));
     });
     grid.querySelectorAll(".int-notify-btn").forEach(btn => {
-      btn.addEventListener("click", () => { btn.textContent = "✓ Notified!"; btn.disabled = true; });
+      const id = btn.dataset.id;
+      const notified = localStorage.getItem(`notify_${id}`);
+      if (notified) { btn.textContent = "✓ Notified"; btn.disabled = true; }
+      btn.addEventListener("click", () => {
+        localStorage.setItem(`notify_${id}`, "1");
+        btn.textContent = "✓ Notified";
+        btn.disabled = true;
+        showToast(`You'll be notified when ${INTEGRATIONS.find(i=>i.id===id)?.name} launches!`, "success");
+      });
     });
   }
 

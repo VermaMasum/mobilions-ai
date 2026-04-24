@@ -158,59 +158,28 @@ const server = http.createServer(async (req, res) => {
         { role: "user", content: userPrompt },
       ];
 
-      res.writeHead(200, {
-        "Content-Type": "text/event-stream",
-        "Cache-Control": "no-cache",
-        "Connection": "keep-alive",
-        "Access-Control-Allow-Origin": "*",
-      });
-
       try {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 60000);
+        const timeout = setTimeout(() => controller.abort(), 55000);
 
         const aiRes = await fetch(`${aiBaseUrl}/chat/completions`, {
           method: "POST",
           headers: { Authorization: `Bearer ${aiApiKey}`, "Content-Type": "application/json" },
           signal: controller.signal,
-          body: JSON.stringify({ model: aiModel, messages, stream: true, temperature: 0.7, max_tokens: 2000 }),
+          body: JSON.stringify({ model: aiModel, messages, stream: false, temperature: 0.7, max_tokens: 2000 }),
         }).finally(() => clearTimeout(timeout));
 
         if (!aiRes.ok) {
-          res.write(`data: ${JSON.stringify({ error: `AI error: ${aiRes.status}` })}\n\n`);
-          res.end(); return;
+          const errData = await aiRes.json().catch(() => ({}));
+          return sendJson(res, 502, { error: errData.error?.message || `AI error: ${aiRes.status}` });
         }
 
-        const reader = aiRes.body.getReader();
-        const decoder = new TextDecoder();
-        let lineBuffer = "";
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          lineBuffer += decoder.decode(value, { stream: true });
-          const lines = lineBuffer.split("\n");
-          lineBuffer = lines.pop() ?? "";
-          for (const line of lines) {
-            const trimmed = line.trim();
-            if (!trimmed.startsWith("data: ")) continue;
-            const data = trimmed.slice(6);
-            if (data === "[DONE]") continue;
-            try {
-              const parsed = JSON.parse(data);
-              const delta = parsed.choices?.[0]?.delta?.content ?? "";
-              if (delta) res.write(`data: ${JSON.stringify({ delta })}\n\n`);
-            } catch { /* ignore */ }
-          }
-        }
-        reader.releaseLock();
+        const data = await aiRes.json();
+        const result = data.choices?.[0]?.message?.content || "";
+        return sendJson(res, 200, { result });
       } catch (err) {
-        res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`);
+        return sendJson(res, 500, { error: err.message });
       }
-
-      res.write("data: [DONE]\n\n");
-      res.end();
-      return;
     }
 
     // ── Brain AI routes ────────────────────────────────────────────────────
