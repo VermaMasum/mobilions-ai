@@ -1,0 +1,623 @@
+{
+  "info": {
+    "name": "Mobilions AI",
+    "_postman_id": "mobilions-ai-collection",
+    "description": "Full API collection for Mobilions AI — Auth, Agents, Power-Ups, Brain AI, Chat, and all Integrations.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:4000", "type": "string" },
+    { "key": "token",   "value": "", "type": "string" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "item": [
+
+    {
+      "name": "🔐 Auth",
+      "item": [
+        {
+          "name": "Sign Up",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/signup",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "const json = pm.response.json();",
+                "if (json.token) {",
+                "  pm.collectionVariables.set('token', json.token);",
+                "  console.log('Token saved:', json.token.slice(0,20) + '...');",
+                "}"
+              ]
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/auth/me"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "🤖 AI Agents",
+      "item": [
+        {
+          "name": "List All Agents",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/agents" }
+        },
+        {
+          "name": "Get Agent by ID",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/agents/aria" }
+        },
+        {
+          "name": "Chat with Agent",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/chat/aria",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Help me write a LinkedIn post about AI productivity tools\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Chat History",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/chat/aria/history" }
+        },
+        {
+          "name": "Clear Chat History",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/api/chat/aria/history" }
+        },
+        {
+          "name": "List All Conversations",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/conversations" }
+        }
+      ]
+    },
+
+    {
+      "name": "⚡ Power-Ups",
+      "item": [
+        {
+          "name": "List All Power-Ups",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/powerups" }
+        },
+        {
+          "name": "Get Power-Up by ID",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/powerups/seo-blog-post" }
+        },
+        {
+          "name": "Run — SEO Blog Post",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/powerups/seo-blog-post/run",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"keyword\": \"AI productivity tools\",\n  \"topic\": \"10 Best AI Productivity Tools for 2025\",\n  \"audience\": \"startup founders\",\n  \"wordCount\": \"1200 words\",\n  \"tone\": \"Professional\",\n  \"details\": \"\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Run — LinkedIn Post",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/powerups/linkedin-post/run",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"topic\": \"Why I switched from meetings to async-first work\",\n  \"audience\": \"startup founders\",\n  \"style\": \"Personal story\",\n  \"details\": \"I removed all recurring meetings and productivity went up 40%\",\n  \"cta\": \"What's your take? Drop it in the comments.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Run — Cold Email",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/powerups/cold-email/run",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sender\": \"Alex from Mobilions AI\",\n  \"product\": \"AI productivity platform\",\n  \"prospect\": \"Marketing directors at B2B SaaS companies\",\n  \"painPoint\": \"Spending too much time on content creation\",\n  \"cta\": \"15-minute demo\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Run — Business Plan Outline",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/powerups/business-plan-outline/run",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"business\": \"NutriAI — personalized AI nutrition coaching app\",\n  \"industry\": \"Health Tech\",\n  \"stage\": \"Seeking investment\",\n  \"details\": \"App that uses AI to create personalized meal plans. 500 beta users, $15k MRR.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Run — Job Description",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/powerups/job-description/run",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"Senior Product Manager\",\n  \"company\": \"Mobilions AI — AI productivity platform\",\n  \"type\": \"Full-time\",\n  \"responsibilities\": \"Define product roadmap\\nWork with engineering and design\\nConduct user research\",\n  \"requirements\": \"5+ years PM experience\\nB2B SaaS background\\nStrong analytical skills\",\n  \"niceToHave\": \"Experience with AI products\",\n  \"compensation\": \"$130K–$160K + equity\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Run — Interview Questions",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/powerups/interview-questions/run",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"Senior Marketing Manager\",\n  \"skills\": \"Content strategy, SEO, demand generation, team leadership\",\n  \"culture\": \"ownership mentality, data-driven, collaborative\",\n  \"stage\": \"First round (45–60 min)\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Run — Performance Review",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/powerups/performance-review/run",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employee\": \"Sarah Chen — Marketing Manager\",\n  \"period\": \"Annual 2024\",\n  \"strengths\": \"Led successful product launch. Grew organic traffic 65%. Strong team player.\",\n  \"development\": \"Needs to improve presentation skills. Delegation could be better.\",\n  \"goals\": \"Launch new content strategy. Build team to 5 people.\",\n  \"rating\": \"Exceeds Expectations\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Run — Market Research Report",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/powerups/market-research/run",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"market\": \"AI productivity tools for SMBs\",\n  \"purpose\": \"Validating product idea before building\",\n  \"questions\": \"Market size\\nKey competitors\\nCustomer pain points\\nPricing models\\nGrowth trends\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Run — Meeting Agenda",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/powerups/meeting-agenda/run",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"meeting\": \"Q2 Marketing Strategy Review\",\n  \"duration\": \"1 hour\",\n  \"attendees\": \"CEO, Head of Marketing, Product Lead, 2 marketing team members\",\n  \"goals\": \"Review Q1 results. Align on Q2 priorities. Assign ownership.\",\n  \"topics\": \"Q1 performance metrics\\nContent strategy for Q2\\nBudget allocation\\nNew campaigns planning\\nAction items\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Run — Cover Letter",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/powerups/cover-letter/run",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"Senior Product Manager at Stripe\",\n  \"company\": \"Stripe — global payments infrastructure company\",\n  \"yourBg\": \"7 years in product management at fintech startups. Led 3 product launches. MBA from IIM.\",\n  \"whyThem\": \"Stripe's API-first approach and mission to increase GDP of the internet deeply resonates with me.\",\n  \"tone\": \"Professional\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Run — Competitor Analysis",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/powerups/competitor-analysis/run",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"yourProduct\": \"Mobilions AI — AI productivity platform for SMBs\",\n  \"competitors\": \"Jasper AI — AI content platform\\nCopy.ai — AI copywriting tool\\nNotion AI — AI features in Notion\",\n  \"focusAreas\": \"Full overview\",\n  \"yourEdge\": \"We combine agents + power-ups + integrations in one platform\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Run — Business Proposal",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/powerups/proposal-writer/run",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"yourCompany\": \"BrightPixel — web design & development agency\",\n  \"client\": \"GreenLeaf Organics — e-commerce food brand\",\n  \"projectScope\": \"Redesign e-commerce website. 3 phases: discovery, design, development. 12 weeks.\",\n  \"problemSolved\": \"Their current site has 4.2s load time and 2.1% conversion rate. Industry avg is 3.5%.\",\n  \"investment\": \"$12,500 fixed fee\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Run — Instagram Caption",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/powerups/instagram-caption/run",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"topic\": \"New product launch — limited edition coffee blend\",\n  \"brand\": \"@freshroastcoffee\",\n  \"audience\": \"coffee lovers aged 25-40\",\n  \"tone\": \"Playful / Fun\",\n  \"cta\": \"Link in bio to order\",\n  \"details\": \"Ethiopian single origin, notes of blueberry and dark chocolate\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Run — YouTube Script",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/powerups/youtube-script/run",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"topic\": \"How to use AI to 10x your productivity in 2025\",\n  \"duration\": \"8 minutes\",\n  \"style\": \"Educational / Tutorial\",\n  \"audience\": \"business owners and entrepreneurs\",\n  \"channel\": \"GrowthHacks — productivity for founders\"\n}"
+            }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "🧠 Brain AI",
+      "item": [
+        {
+          "name": "Get Brain Entries",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/brain" }
+        },
+        {
+          "name": "Add Brain Entry",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/brain",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Company Overview\",\n  \"content\": \"Mobilions AI is an AI productivity platform for SMBs. Founded 2024. 3 co-founders. B2B SaaS. $49/month pricing.\",\n  \"type\": \"text\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Brain Entry",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/brain/ENTRY_ID_HERE"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "🔗 Integrations",
+      "item": [
+        {
+          "name": "List Connected Integrations",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/integrations" }
+        },
+
+        {
+          "name": "📧 Gmail",
+          "item": [
+            {
+              "name": "Connect Gmail (redirect URL)",
+              "request": { "method": "GET", "url": "{{baseUrl}}/api/integrations/gmail/connect?token={{token}}" }
+            },
+            {
+              "name": "Disconnect Gmail",
+              "request": { "method": "DELETE", "url": "{{baseUrl}}/api/integrations/gmail" }
+            },
+            {
+              "name": "Get Inbox",
+              "request": { "method": "GET", "url": "{{baseUrl}}/api/integrations/gmail/inbox" }
+            },
+            {
+              "name": "Get Message by ID",
+              "request": { "method": "GET", "url": "{{baseUrl}}/api/integrations/gmail/message/MESSAGE_ID_HERE" }
+            },
+            {
+              "name": "Send Email",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "url": "{{baseUrl}}/api/integrations/gmail/send",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"to\": \"recipient@example.com\",\n  \"subject\": \"Hello from Mobilions AI\",\n  \"body\": \"This email was sent via the Mobilions AI API.\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Create Draft",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "url": "{{baseUrl}}/api/integrations/gmail/draft",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"to\": \"recipient@example.com\",\n  \"subject\": \"Draft subject\",\n  \"body\": \"Draft body content\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Ask AI about Gmail",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "url": "{{baseUrl}}/api/integrations/gmail/ask",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"message\": \"Summarize my last 5 emails and flag anything urgent\"\n}"
+                }
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "📅 Google Calendar",
+          "item": [
+            {
+              "name": "Connect Google Calendar (redirect URL)",
+              "request": { "method": "GET", "url": "{{baseUrl}}/api/integrations/gcal/connect?token={{token}}" }
+            },
+            {
+              "name": "Disconnect Google Calendar",
+              "request": { "method": "DELETE", "url": "{{baseUrl}}/api/integrations/gcal" }
+            },
+            {
+              "name": "List Events",
+              "request": { "method": "GET", "url": "{{baseUrl}}/api/integrations/gcal/events" }
+            },
+            {
+              "name": "Create Event",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "url": "{{baseUrl}}/api/integrations/gcal/events",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"summary\": \"Team Standup\",\n  \"description\": \"Daily team standup meeting\",\n  \"start\": \"2025-06-01T09:00:00\",\n  \"end\": \"2025-06-01T09:30:00\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Delete Event",
+              "request": { "method": "DELETE", "url": "{{baseUrl}}/api/integrations/gcal/events/EVENT_ID_HERE" }
+            },
+            {
+              "name": "Ask AI about Calendar",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "url": "{{baseUrl}}/api/integrations/gcal/ask",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"message\": \"What meetings do I have this week? Am I overbooked?\"\n}"
+                }
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "📁 Google Drive",
+          "item": [
+            {
+              "name": "Connect Google Drive (redirect URL)",
+              "request": { "method": "GET", "url": "{{baseUrl}}/api/integrations/gdrive/connect?token={{token}}" }
+            },
+            {
+              "name": "Disconnect Google Drive",
+              "request": { "method": "DELETE", "url": "{{baseUrl}}/api/integrations/gdrive" }
+            },
+            {
+              "name": "List Files",
+              "request": { "method": "GET", "url": "{{baseUrl}}/api/integrations/gdrive/files" }
+            },
+            {
+              "name": "Get File by ID",
+              "request": { "method": "GET", "url": "{{baseUrl}}/api/integrations/gdrive/files/FILE_ID_HERE" }
+            },
+            {
+              "name": "Ask AI about Drive",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "url": "{{baseUrl}}/api/integrations/gdrive/ask",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"message\": \"List my recent files and summarize what I've been working on\"\n}"
+                }
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "💬 Slack",
+          "item": [
+            {
+              "name": "Connect Slack (redirect URL)",
+              "request": { "method": "GET", "url": "{{baseUrl}}/api/integrations/slack/connect?token={{token}}" }
+            },
+            {
+              "name": "Disconnect Slack",
+              "request": { "method": "DELETE", "url": "{{baseUrl}}/api/integrations/slack" }
+            },
+            {
+              "name": "List Channels",
+              "request": { "method": "GET", "url": "{{baseUrl}}/api/integrations/slack/channels" }
+            },
+            {
+              "name": "Get Channel Messages",
+              "request": { "method": "GET", "url": "{{baseUrl}}/api/integrations/slack/channels/CHANNEL_ID_HERE/messages" }
+            },
+            {
+              "name": "Send Slack Message",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "url": "{{baseUrl}}/api/integrations/slack/send",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"channel\": \"#general\",\n  \"message\": \"Hello from Mobilions AI!\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Ask AI about Slack",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "url": "{{baseUrl}}/api/integrations/slack/ask",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"message\": \"Summarize recent messages and highlight anything I need to respond to\"\n}"
+                }
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "💼 LinkedIn",
+          "item": [
+            {
+              "name": "Connect LinkedIn (redirect URL)",
+              "request": { "method": "GET", "url": "{{baseUrl}}/api/integrations/linkedin/connect?token={{token}}" }
+            },
+            {
+              "name": "Disconnect LinkedIn",
+              "request": { "method": "DELETE", "url": "{{baseUrl}}/api/integrations/linkedin" }
+            },
+            {
+              "name": "Get Profile",
+              "request": { "method": "GET", "url": "{{baseUrl}}/api/integrations/linkedin/profile" }
+            },
+            {
+              "name": "Get Recent Posts",
+              "request": { "method": "GET", "url": "{{baseUrl}}/api/integrations/linkedin/posts" }
+            },
+            {
+              "name": "Create Post",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "url": "{{baseUrl}}/api/integrations/linkedin/post",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"content\": \"Excited to share our latest product update! Check out Mobilions AI 🚀\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Ask AI about LinkedIn",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "url": "{{baseUrl}}/api/integrations/linkedin/ask",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"message\": \"Analyse my recent posts and suggest what content is performing best\"\n}"
+                }
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "📓 Notion",
+          "item": [
+            {
+              "name": "Connect Notion (redirect URL)",
+              "request": { "method": "GET", "url": "{{baseUrl}}/api/integrations/notion/connect?token={{token}}" }
+            },
+            {
+              "name": "Disconnect Notion",
+              "request": { "method": "DELETE", "url": "{{baseUrl}}/api/integrations/notion" }
+            },
+            {
+              "name": "Search Pages",
+              "request": { "method": "GET", "url": "{{baseUrl}}/api/integrations/notion/search?q=meeting+notes" }
+            },
+            {
+              "name": "Get Page by ID",
+              "request": { "method": "GET", "url": "{{baseUrl}}/api/integrations/notion/pages/PAGE_ID_HERE" }
+            },
+            {
+              "name": "Create Page",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "url": "{{baseUrl}}/api/integrations/notion/pages",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"parentId\": \"PARENT_PAGE_OR_DATABASE_ID\",\n  \"title\": \"New Page from Mobilions AI\",\n  \"content\": \"Page content goes here\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Get Database",
+              "request": { "method": "GET", "url": "{{baseUrl}}/api/integrations/notion/databases/DATABASE_ID_HERE" }
+            },
+            {
+              "name": "Query Database",
+              "request": { "method": "GET", "url": "{{baseUrl}}/api/integrations/notion/databases/DATABASE_ID_HERE/query" }
+            },
+            {
+              "name": "Create Ticket in Database",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "url": "{{baseUrl}}/api/integrations/notion/databases/DATABASE_ID_HERE/tickets",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Fix login bug\",\n  \"status\": \"To Do\",\n  \"priority\": \"High\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Ask AI about Notion",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "url": "{{baseUrl}}/api/integrations/notion/ask",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"message\": \"Find all my meeting notes from this week and summarize the action items\"\n}"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+
+  ]
+}

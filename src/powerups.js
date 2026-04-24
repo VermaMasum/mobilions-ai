@@ -2431,19 +2431,236 @@ How to know onboarding was successful:
 **MANAGER'S ONBOARDING CHECKLIST**
 What the manager must do during each phase.`,
   },
+
+  // ── NEW: Cover Letter ───────────────────────────────────────────────────
+  {
+    id: "cover-letter",
+    name: "Cover Letter",
+    category: "hr",
+    categoryLabel: "HR & Recruiting",
+    emoji: "✉️",
+    agentId: "bloom",
+    description: "Write a compelling, personalised cover letter tailored to a specific job and company.",
+    fields: [
+      { id: "role",        label: "Job Title You're Applying For", type: "text",     placeholder: "e.g. Senior Product Manager at Stripe",                     required: true  },
+      { id: "company",     label: "Company Name & What They Do",   type: "text",     placeholder: "e.g. Stripe — global payments infrastructure",              required: true  },
+      { id: "yourBg",      label: "Your Background / Key Skills",  type: "textarea", placeholder: "Briefly describe your experience, skills, and standout achievements", required: true  },
+      { id: "whyThem",     label: "Why This Company?",             type: "textarea", placeholder: "What specifically excites you about this company/role?",    required: true  },
+      { id: "tone",        label: "Tone",                          type: "select",   options: ["Professional", "Enthusiastic", "Confident", "Concise & Direct"], defaultVal: "Professional" },
+    ],
+    buildPrompt: (f) => `Write a professional cover letter for ${f.role}.
+
+Company: ${f.company}
+My background: ${f.yourBg}
+Why this company: ${f.whyThem}
+Tone: ${f.tone}
+
+Requirements:
+- Opening paragraph: Hook that shows genuine excitement and fits the role
+- Middle (2 paragraphs): Relevant experience, specific achievements with numbers where possible, skills that match the role
+- Closing paragraph: Confident CTA — express interest in next steps
+- Tone: ${f.tone}
+- Length: 250–350 words
+- Do NOT use clichés like "I am writing to apply for" or "I believe I would be a great fit"
+- Personalise to the company values and role requirements
+Output the full cover letter, formatted with clear paragraphs.`,
+  },
+
+  // ── NEW: Executive Summary ───────────────────────────────────────────────
+  {
+    id: "executive-summary",
+    name: "Executive Summary",
+    category: "business",
+    categoryLabel: "Business Strategy",
+    emoji: "📋",
+    agentId: "nexus",
+    description: "Write a crisp executive summary for a business plan, report, or proposal.",
+    fields: [
+      { id: "document",  label: "Document Type",              type: "select",   options: ["Business Plan", "Investor Pitch", "Project Report", "Proposal", "Research Report"], defaultVal: "Business Plan" },
+      { id: "business",  label: "Company / Project Name",     type: "text",     placeholder: "e.g. NutriAI — AI-powered nutrition coaching",           required: true  },
+      { id: "overview",  label: "Key Points to Cover",        type: "textarea", placeholder: "Problem, solution, market size, traction, team, ask — bullet the main facts", required: true  },
+      { id: "audience",  label: "Target Audience",            type: "text",     placeholder: "e.g. Series A investors, board members, department heads", required: true  },
+      { id: "length",    label: "Length",                     type: "select",   options: ["150 words (one paragraph)", "300 words (half page)", "500 words (full page)"], defaultVal: "300 words (half page)" },
+    ],
+    buildPrompt: (f) => `Write a ${f.length} executive summary for a ${f.document} targeting ${f.audience}.
+
+Company / Project: ${f.business}
+Key points to cover:
+${f.overview}
+
+Requirements:
+- Open with a powerful one-sentence hook about the opportunity or problem
+- Concisely cover the most important facts: problem, solution, market, traction, team, ask
+- Use clear, confident language — no filler or jargon
+- Written for ${f.audience} — calibrate technicality and tone accordingly
+- End with a clear statement of what you're asking for or what action should be taken
+- Length: ${f.length}
+Output only the executive summary text.`,
+  },
+
+  // ── NEW: Competitor Analysis ─────────────────────────────────────────────
+  {
+    id: "competitor-analysis",
+    name: "Competitor Analysis",
+    category: "business",
+    categoryLabel: "Business Strategy",
+    emoji: "🔬",
+    agentId: "scout",
+    description: "Analyse your top competitors — positioning, strengths, weaknesses, and gaps you can exploit.",
+    fields: [
+      { id: "yourProduct",   label: "Your Product / Business",       type: "text",     placeholder: "e.g. Mobilions AI — AI productivity platform for SMBs",    required: true  },
+      { id: "competitors",   label: "Competitors to Analyse",        type: "textarea", placeholder: "List 3–5 competitors (name + one-line description each)",   required: true  },
+      { id: "focusAreas",    label: "What to Focus On",              type: "select",   options: ["Full overview", "Pricing & positioning", "Features & product", "Marketing & messaging", "Target audience"], defaultVal: "Full overview" },
+      { id: "yourEdge",      label: "Your Differentiator (optional)",type: "text",     placeholder: "What do you do better or differently?",                   required: false },
+    ],
+    buildPrompt: (f) => `Write a structured competitor analysis for ${f.yourProduct}.
+
+Competitors to analyse:
+${f.competitors}
+
+Focus: ${f.focusAreas}
+${f.yourEdge ? `Our differentiator: ${f.yourEdge}` : ""}
+
+For each competitor provide:
+1. **Overview** — what they do, who they target, their positioning
+2. **Strengths** — what they do well (product, marketing, pricing, brand)
+3. **Weaknesses** — gaps, complaints, limitations
+4. **Pricing** — pricing model and tier structure if known
+
+Then provide:
+**Competitive Landscape Summary** — patterns across all competitors
+**Market Gaps & Opportunities** — white space that ${f.yourProduct} can exploit
+**Strategic Recommendations** — 3–5 specific actions based on this analysis
+
+Be analytical and specific. Avoid generic statements.`,
+  },
+
+  // ── NEW: Business Proposal ───────────────────────────────────────────────
+  {
+    id: "proposal-writer",
+    name: "Business Proposal",
+    category: "sales",
+    categoryLabel: "Sales",
+    emoji: "📄",
+    agentId: "dex",
+    description: "Write a professional business proposal that wins clients and projects.",
+    fields: [
+      { id: "yourCompany",  label: "Your Company Name & What You Do", type: "text",     placeholder: "e.g. BrightPixel — web design & development agency",       required: true  },
+      { id: "client",       label: "Client Name & Business",          type: "text",     placeholder: "e.g. GreenLeaf Organics — e-commerce food brand",           required: true  },
+      { id: "projectScope", label: "Project / Service Scope",         type: "textarea", placeholder: "What are you proposing to do? Key deliverables, phases, timeline", required: true  },
+      { id: "problemSolved",label: "Problem You're Solving for Them", type: "textarea", placeholder: "What is their core challenge or goal you're addressing?",   required: true  },
+      { id: "investment",   label: "Investment / Pricing (optional)", type: "text",     placeholder: "e.g. $8,500 — fixed fee, or $1,200/month retainer",         required: false },
+    ],
+    buildPrompt: (f) => `Write a professional business proposal from ${f.yourCompany} to ${f.client}.
+
+Project scope: ${f.projectScope}
+Problem we're solving: ${f.problemSolved}
+${f.investment ? `Investment: ${f.investment}` : ""}
+
+Write the full proposal with these sections:
+
+**EXECUTIVE SUMMARY** — One paragraph: who you are, what you're proposing, and why it's right for ${f.client}
+
+**THE CHALLENGE** — Articulate the client's problem or opportunity compellingly
+
+**OUR PROPOSED SOLUTION** — What you'll deliver, how, and why this approach
+
+**SCOPE OF WORK** — Clear breakdown of deliverables, phases, and timeline
+
+**WHY US** — 3 reasons ${f.yourCompany} is the right choice (experience, methodology, results)
+
+${f.investment ? `**INVESTMENT** — Present the pricing clearly with what's included` : ""}
+
+**NEXT STEPS** — Clear, simple call to action
+
+Write in a professional, confident tone. Specific and results-focused throughout.`,
+  },
+
+  // ── NEW: Welcome Email ───────────────────────────────────────────────────
+  {
+    id: "welcome-email",
+    name: "Welcome Email",
+    category: "marketing",
+    categoryLabel: "Marketing",
+    emoji: "👋",
+    agentId: "mailo",
+    description: "Write a warm, engaging welcome email for new subscribers, users, or customers.",
+    fields: [
+      { id: "brand",       label: "Brand / Product Name",             type: "text",     placeholder: "e.g. Notion, GrowthLetter, NutriAI",                      required: true  },
+      { id: "audience",    label: "Who Is This For?",                 type: "select",   options: ["New email subscribers", "New free trial users", "New paying customers", "New community members"], defaultVal: "New email subscribers" },
+      { id: "mainValue",   label: "Main Value / What They'll Get",    type: "textarea", placeholder: "What benefit will they get? What should they do first?",   required: true  },
+      { id: "tone",        label: "Brand Tone",                       type: "select",   options: ["Warm & friendly", "Professional", "Exciting & energetic", "Minimal & clean"], defaultVal: "Warm & friendly" },
+      { id: "cta",         label: "Primary CTA",                      type: "text",     placeholder: "e.g. Start your first project, Read the guide, Join the community", required: true  },
+    ],
+    buildPrompt: (f) => `Write a welcome email for ${f.brand} sent to ${f.audience}.
+
+Main value / what they get: ${f.mainValue}
+Primary CTA: ${f.cta}
+Tone: ${f.tone}
+
+Requirements:
+- Subject line: Write 3 subject line options (emoji optional)
+- Opening: Warm, personal — make them feel good about signing up
+- Body: Quickly deliver the core value promise — what they get, what to expect
+- Quick-start: 1–3 simple actions they can take right now
+- CTA button: "${f.cta}"
+- Closing: Personal sign-off that builds connection
+- Keep it concise — ideally under 200 words in the body
+- Tone: ${f.tone}
+
+Format clearly with subject lines at top, then the full email below.`,
+  },
+
+  // ── NEW: LinkedIn About / Summary ────────────────────────────────────────
+  {
+    id: "linkedin-about",
+    name: "LinkedIn About Section",
+    category: "social",
+    categoryLabel: "Social Media",
+    emoji: "🪪",
+    agentId: "aria",
+    description: "Write a compelling LinkedIn About/Summary section that attracts the right opportunities.",
+    fields: [
+      { id: "name",       label: "Your Name & Current Role",        type: "text",     placeholder: "e.g. Alex Chen — Head of Growth at TechCorp",             required: true  },
+      { id: "background", label: "Your Background & Experience",    type: "textarea", placeholder: "Career history, key roles, industries, years of experience", required: true  },
+      { id: "skills",     label: "Top Skills & Expertise",         type: "textarea", placeholder: "Your strongest skills, tools, methodologies",              required: true  },
+      { id: "goal",       label: "What You Want to Attract",       type: "text",     placeholder: "e.g. Senior PM roles, freelance clients, speaking gigs, investor conversations", required: true  },
+      { id: "tone",       label: "Tone",                           type: "select",   options: ["Professional & authoritative", "Conversational & approachable", "Bold & confident", "Humble & story-driven"], defaultVal: "Professional & authoritative" },
+    ],
+    buildPrompt: (f) => `Write a LinkedIn About / Summary section for ${f.name}.
+
+Background: ${f.background}
+Skills: ${f.skills}
+Goal (attract): ${f.goal}
+Tone: ${f.tone}
+
+Requirements:
+- Hook (first 2 lines): Must be compelling enough to make people click "see more" — lead with impact, not job title
+- Tell a brief professional story — journey, what you stand for, what drives you
+- Highlight top skills and expertise naturally woven in
+- Mention specific results or achievements (numbers help)
+- Clear signal of what opportunities you're open to
+- End with a CTA (how to contact, connect, or work with you)
+- Length: 200–280 words
+- Tone: ${f.tone}
+- First person, no buzzword overload
+- Do NOT start with "I am a passionate..."
+
+Output the complete About section ready to paste into LinkedIn.`,
+  },
 ];
 
 // Build lookup map
 export const POWERUPS_MAP = Object.fromEntries(POWERUPS.map(p => [p.id, p]));
 
 export const POWERUP_CATEGORIES = [
-  { id: "all",       label: "All Power-Ups" },
-  { id: "content",   label: "Content Writing" },
-  { id: "social",    label: "Social Media" },
-  { id: "sales",     label: "Sales" },
-  { id: "marketing", label: "Marketing" },
-  { id: "support",   label: "Customer Support" },
-  { id: "seo",       label: "SEO" },
-  { id: "business",  label: "Business Strategy" },
-  { id: "hr",        label: "HR & Recruiting" },
+  { id: "all",       label: "All Power-Ups",       emoji: "⚡" },
+  { id: "content",   label: "Content Writing",     emoji: "📝" },
+  { id: "social",    label: "Social Media",         emoji: "📱" },
+  { id: "sales",     label: "Sales",               emoji: "🎯" },
+  { id: "marketing", label: "Marketing",           emoji: "📊" },
+  { id: "support",   label: "Customer Support",    emoji: "💬" },
+  { id: "seo",       label: "SEO",                 emoji: "🔍" },
+  { id: "business",  label: "Business Strategy",   emoji: "🧩" },
+  { id: "hr",        label: "HR & Recruiting",     emoji: "🎓" },
 ];
